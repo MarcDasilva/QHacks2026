@@ -1,0 +1,5 @@
+[
+  { "id": 1, "header": "Q1 Campaign", "type": "Proposal", "status": "Active", "target": "10k", "limit": "50", "reviewer": "Alex" },
+  { "id": 2, "header": "Product Launch", "type": "Report", "status": "Draft", "target": "5k", "limit": "25", "reviewer": "Sam" },
+  { "id": 3, "header": "Annual Review", "type": "Proposal", "status": "Completed", "target": "20k", "limit": "100", "reviewer": "Jordan" }
+]
