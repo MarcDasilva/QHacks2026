@@ -29,8 +29,10 @@ def get_embedding_model():
     """Load the embedding model (lazy loading to avoid loading if not needed)."""
     try:
         from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer('all-mpnet-base-v2')
-        print("[INFO] Loaded embedding model: all-mpnet-base-v2")
+        # Using all-MiniLM-L6-v2 (384 dimensions) instead of all-mpnet-base-v2 (768 dimensions)
+        # to stay within Supabase plan limits while maintaining good quality
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        print("[INFO] Loaded embedding model: all-MiniLM-L6-v2 (384 dimensions)")
         return model
     except ImportError:
         print("[ERROR] sentence-transformers not installed. Install with: pip install sentence-transformers")

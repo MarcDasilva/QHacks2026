@@ -1,23 +1,3 @@
-CREATE TABLE raw_requests (
-  "Service Request ID" TEXT,
-  "Reference Number" TEXT,
-  "Electoral District" TEXT,
-  "Neighbourhood" TEXT,
-  "Channel" TEXT,
-  "Date Closed" TEXT,
-  "Date Created" TEXT,
-  "Date Last Updated" TEXT,
-  "Service Type" TEXT,
-  "Service Level 1" TEXT,
-  "Service Level 2" TEXT,
-  "Service Level 3" TEXT,
-  "Service Level 4" TEXT,
-  "Service Level 5" TEXT,
-  "Status Type" TEXT,
-  "First call resolution" TEXT,
-  "OBJECTID" BIGINT
-);
-
 CREATE TABLE requests (
   id SERIAL PRIMARY KEY,
   service_request_id TEXT UNIQUE,
@@ -27,7 +7,7 @@ CREATE TABLE requests (
   created_at DATE NOT NULL,
   resolved_at DATE,
   location TEXT,
-  embedding VECTOR(768)
+  embedding VECTOR(384)
 );
 
 CREATE TABLE alerts (
