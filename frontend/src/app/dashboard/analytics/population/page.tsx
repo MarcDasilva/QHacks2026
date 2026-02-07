@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Cell, Pie, PieChart } from "recharts"
+import { Cell, Pie, PieChart } from "recharts";
 import {
   Card,
   CardContent,
@@ -8,10 +8,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { AnalyticsFooter } from "../analytics-footer"
-import { frequencyPieData, populationSummary } from "../data"
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { AnalyticsFooter } from "../analytics-footer";
+import { frequencyPieData, populationSummary } from "../data";
 
 const PIE_COLORS = [
   "var(--chart-1)",
@@ -30,7 +34,7 @@ const PIE_COLORS = [
   "oklch(0.65 0.22 20)",
   "oklch(0.58 0.2 320)",
   "oklch(0.55 0.18 180)",
-]
+];
 
 export default function PopulationPage() {
   return (
@@ -39,11 +43,12 @@ export default function PopulationPage() {
         <CardHeader>
           <CardTitle>Current population (last period)</CardTitle>
           <CardDescription>
-            Distribution of requests by category for the most recent period. Last row of the frequency table.
+            Distribution of requests by category for the most recent period.
+            Last row of the frequency table.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={{}} className="h-[320px] w-full">
+          <ChartContainer config={{}} className="h-[420px] w-full">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent />} />
               <Pie
@@ -52,10 +57,12 @@ export default function PopulationPage() {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={90}
+                innerRadius={85}
+                outerRadius={130}
                 paddingAngle={1}
-                label={({ name, percent }) => `${name.slice(0, 12)}… ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) =>
+                  `${name.slice(0, 12)}… ${(percent * 100).toFixed(0)}%`
+                }
               >
                 {frequencyPieData.map((_, i) => (
                   <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
@@ -69,7 +76,10 @@ export default function PopulationPage() {
             title="Key metrics"
             columns={2}
             items={[
-              { label: "Total requests", value: populationSummary.total.toLocaleString() },
+              {
+                label: "Total requests",
+                value: populationSummary.total.toLocaleString(),
+              },
               {
                 label: "Top category",
                 value: `${populationSummary.topCategory} (${populationSummary.topPct}%)`,
@@ -79,5 +89,5 @@ export default function PopulationPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

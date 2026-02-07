@@ -165,39 +165,70 @@ export const backlogBarData = [
 export const frequencyLatestChange = {
   period: "2024-06 vs 2023-10",
   series: [
-    { key: "garbage", label: "Garbage, recycling and organics", value: 301, prev: 552, changePct: -45.5 },
-    { key: "roads", label: "Roads, traffic and sidewalks", value: 445, prev: 392, changePct: 13.5 },
-    { key: "recreation", label: "Recreation and leisure", value: 588, prev: 384, changePct: 53.1 },
+    {
+      key: "garbage",
+      label: "Garbage, recycling and organics",
+      value: 301,
+      prev: 552,
+      changePct: -45.5,
+    },
+    {
+      key: "roads",
+      label: "Roads, traffic and sidewalks",
+      value: 445,
+      prev: 392,
+      changePct: 13.5,
+    },
+    {
+      key: "recreation",
+      label: "Recreation and leisure",
+      value: 588,
+      prev: 384,
+      changePct: 53.1,
+    },
   ],
-}
+};
 
-// Summary for Current population (pie): total and top category
-const _popTotal = frequencyPieData.reduce((s, d) => s + d.value, 0)
+// Total requests by category (from fcr_by_category.csv) for population summary
+const totalRequestsByCategory = [
+  24091, 7909, 865, 5059, 1623, 160, 559, 31, 23199, 4448, 1689, 11875, 171,
+  6626, 40526, 7912,
+];
+const _totalRequestsSum = totalRequestsByCategory.reduce((s, n) => s + n, 0);
+
+// Summary for Current population (pie): total requests from CSV, top category from pie
+const _pieTotal = frequencyPieData.reduce((s, d) => s + d.value, 0);
 const _topPop = frequencyPieData.length
-  ? frequencyPieData.reduce((a, b) => (a.value >= b.value ? a : b), frequencyPieData[0])
-  : null
+  ? frequencyPieData.reduce(
+      (a, b) => (a.value >= b.value ? a : b),
+      frequencyPieData[0],
+    )
+  : null;
 export const populationSummary = {
-  total: _popTotal,
+  total: _totalRequestsSum,
   topCategory: _topPop?.name ?? "Recreation and leisure",
   topValue: _topPop?.value ?? 588,
-  topPct: _popTotal && _topPop ? Math.round((_topPop.value / _popTotal) * 100) : 0,
-}
+  topPct: _pieTotal && _topPop ? Math.round((_topPop.value / _pieTotal) * 100) : 0,
+};
 
 // Summary for Priority quadrant
 export const prioritySummary = {
-  highPriorityCount: priorityQuadrantData.filter((d) => d.priority_category?.includes("High")).length,
+  highPriorityCount: priorityQuadrantData.filter((d) =>
+    d.priority_category?.includes("High"),
+  ).length,
   totalRequests: priorityQuadrantData.reduce((s, d) => s + d.request_count, 0),
   avgTimeToClose: Math.round(
-    priorityQuadrantData.reduce((s, d) => s + d.time_to_close_days, 0) / priorityQuadrantData.length
+    priorityQuadrantData.reduce((s, d) => s + d.time_to_close_days, 0) /
+      priorityQuadrantData.length,
   ),
-}
+};
 
 // Summary for Backlog rank list
 export const backlogSummary = {
   totalUnresolved: backlogBarData.reduce((s, d) => s + d.total_unresolved, 0),
   topCategory: backlogBarData[0]?.category ?? "—",
   topValue: backlogBarData[0]?.total_unresolved ?? 0,
-}
+};
 
 // Geographic hot spots: electoral_district, volume, unresolved, slow_p90 (heat map)
 export const geographicHotSpotsData = [
@@ -205,13 +236,23 @@ export const geographicHotSpotsData = [
   { district: "Sydenham", volume: 6832, unresolved: 1, slow_p90: 5 },
   { district: "Williamsville", volume: 4382, unresolved: 2, slow_p90: 10 },
   { district: "Kingscourt-Rideau", volume: 4363, unresolved: 5, slow_p90: 26 },
-  { district: "Loyalist-Cataraqui", volume: 4336, unresolved: 8, slow_p90: 29.3 },
+  {
+    district: "Loyalist-Cataraqui",
+    volume: 4336,
+    unresolved: 8,
+    slow_p90: 29.3,
+  },
   { district: "Pittsburgh", volume: 4013, unresolved: 5, slow_p90: 32 },
   { district: "Trillium", volume: 3435, unresolved: 4, slow_p90: 16 },
   { district: "Countryside", volume: 3410, unresolved: 3, slow_p90: 64 },
   { district: "Portsmouth", volume: 3345, unresolved: 2, slow_p90: 23 },
   { district: "Collins-Bayridge", volume: 3331, unresolved: 3, slow_p90: 30 },
-  { district: "Meadowbrook-Strathcona", volume: 3297, unresolved: 2, slow_p90: 28 },
+  {
+    district: "Meadowbrook-Strathcona",
+    volume: 3297,
+    unresolved: 2,
+    slow_p90: 28,
+  },
   { district: "Lakeside", volume: 3249, unresolved: 9, slow_p90: 33.1 },
 ];
 
