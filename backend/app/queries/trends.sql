@@ -1,0 +1,2 @@
+-- Trends query
+-- This file contains SQL queries for trend analysis

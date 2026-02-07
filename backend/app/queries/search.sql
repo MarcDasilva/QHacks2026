@@ -1,0 +1,2 @@
+-- Search query
+-- This file contains SQL queries for search functionality
