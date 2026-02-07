@@ -110,7 +110,7 @@ export default function DashboardLayout({
                 <GlowEffect active={showGlow} />
               </div>
               <div className="flex h-full max-h-full w-80 shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-zinc-200 dark:bg-zinc-800 md:w-96">
-                <BoohooRive />
+                <BoohooRive glowActive={showGlow} />
               </div>
             </div>
           </div>

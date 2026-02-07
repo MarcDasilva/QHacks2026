@@ -53,14 +53,48 @@ export function GlowEffect({ active, className }: GlowEffectProps) {
           >
             <rect width="1" height="1" fill="white" />
             <rect
-              x="0.015"
-              y="0.015"
-              width="0.97"
-              height="0.97"
+              x="0.005"
+              y="0.005"
+              width="0.99"
+              height="0.99"
               rx="0.025"
               ry="0.025"
               fill="black"
-            />
+            >
+              {/* Reveal from outward to inward: inner cutout shrinks so the border band grows from the edge */}
+              <animate
+                attributeName="x"
+                from="0.005"
+                to="0.015"
+                dur="0.35s"
+                fill="freeze"
+                begin="0s"
+              />
+              <animate
+                attributeName="y"
+                from="0.005"
+                to="0.015"
+                dur="0.35s"
+                fill="freeze"
+                begin="0s"
+              />
+              <animate
+                attributeName="width"
+                from="0.99"
+                to="0.97"
+                dur="0.35s"
+                fill="freeze"
+                begin="0s"
+              />
+              <animate
+                attributeName="height"
+                from="0.99"
+                to="0.97"
+                dur="0.35s"
+                fill="freeze"
+                begin="0s"
+              />
+            </rect>
           </mask>
         </defs>
       </svg>
@@ -71,6 +105,7 @@ export function GlowEffect({ active, className }: GlowEffectProps) {
           background:
             "linear-gradient(var(--gradient-angle), blue, purple, red, orange)",
           animation: "glow-rotation 5s linear infinite",
+          filter: "blur(10px)",
           WebkitMaskImage: `url(#${maskId})`,
           maskImage: `url(#${maskId})`,
           WebkitMaskSize: "100% 100%",
