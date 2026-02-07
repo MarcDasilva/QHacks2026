@@ -1,0 +1,64 @@
+# Data Summary: time_to_close
+# Generated: 2026-02-07 15:46:55
+# Description: Time-to-close statistics by category with distribution bins
+# Source File: time_to_close.csv
+# Filter: None
+# Use Cases: performance analysis, SLA tracking, efficiency metrics
+# Metrics: median, p75, p90, mean, min, max
+================================================================================
+
+Shape: 96 rows × 10 columns
+Columns: Service Level 1, time_bin, bin_count, total_count, median, p75, p90, mean, min, max
+
+First 50 rows (of 96 total):
+                             Service Level 1   time_bin  bin_count  total_count  median  p75  p90  mean  min  max
+                            Arts and culture     0 days         93          170     0.0  1.8  8.0   9.7    0  609
+                            Arts and culture   1-2 days         45          170     0.0  1.8  8.0   9.7    0  609
+                            Arts and culture   3-7 days         14          170     0.0  1.8  8.0   9.7    0  609
+                            Arts and culture  8-30 days         11          170     0.0  1.8  8.0   9.7    0  609
+                            Arts and culture 31-90 days          2          170     0.0  1.8  8.0   9.7    0  609
+                            Arts and culture   90+ days          5          170     0.0  1.8  8.0   9.7    0  609
+                                    Building     0 days       1168         5058     2.0  5.0  9.0  12.8    0  800
+                                    Building   1-2 days       1697         5058     2.0  5.0  9.0  12.8    0  800
+                                    Building   3-7 days       1529         5058     2.0  5.0  9.0  12.8    0  800
+                                    Building  8-30 days        438         5058     2.0  5.0  9.0  12.8    0  800
+                                    Building 31-90 days         68         5058     2.0  5.0  9.0  12.8    0  800
+                                    Building   90+ days        158         5058     2.0  5.0  9.0  12.8    0  800
+                                City General     0 days       3252         6627     1.0  1.0  3.0   1.9    0 1123
+                                City General   1-2 days       2339         6627     1.0  1.0  3.0   1.9    0 1123
+                                City General   3-7 days        873         6627     1.0  1.0  3.0   1.9    0 1123
+                                City General  8-30 days        120         6627     1.0  1.0  3.0   1.9    0 1123
+                                City General 31-90 days         29         6627     1.0  1.0  3.0   1.9    0 1123
+                                City General   90+ days         14         6627     1.0  1.0  3.0   1.9    0 1123
+Engineering, infrastructure and construction     0 days        444         1612     2.0  9.0 91.9  53.8    0 1325
+Engineering, infrastructure and construction   1-2 days        389         1612     2.0  9.0 91.9  53.8    0 1325
+Engineering, infrastructure and construction   3-7 days        334         1612     2.0  9.0 91.9  53.8    0 1325
+Engineering, infrastructure and construction  8-30 days        206         1612     2.0  9.0 91.9  53.8    0 1325
+Engineering, infrastructure and construction 31-90 days         74         1612     2.0  9.0 91.9  53.8    0 1325
+Engineering, infrastructure and construction   90+ days        165         1612     2.0  9.0 91.9  53.8    0 1325
+                                 Environment     0 days         89          160     0.0  3.0  8.1   5.8    0  450
+                                 Environment   1-2 days         28          160     0.0  3.0  8.1   5.8    0  450
+                                 Environment   3-7 days         26          160     0.0  3.0  8.1   5.8    0  450
+                                 Environment  8-30 days         14          160     0.0  3.0  8.1   5.8    0  450
+                                 Environment 31-90 days          1          160     0.0  3.0  8.1   5.8    0  450
+                                 Environment   90+ days          2          160     0.0  3.0  8.1   5.8    0  450
+             Garbage, recycling and organics     0 days      24974        40526     0.0  1.0  3.0   1.8    0 1841
+             Garbage, recycling and organics   1-2 days      10101        40526     0.0  1.0  3.0   1.8    0 1841
+             Garbage, recycling and organics   3-7 days       4146        40526     0.0  1.0  3.0   1.8    0 1841
+             Garbage, recycling and organics  8-30 days        991        40526     0.0  1.0  3.0   1.8    0 1841
+             Garbage, recycling and organics 31-90 days        230        40526     0.0  1.0  3.0   1.8    0 1841
+             Garbage, recycling and organics   90+ days         84        40526     0.0  1.0  3.0   1.8    0 1841
+                                   Licensing     0 days        198          559     1.0  4.0  7.0   5.0    0  613
+                                   Licensing   1-2 days        181          559     1.0  4.0  7.0   5.0    0  613
+                                   Licensing   3-7 days        127          559     1.0  4.0  7.0   5.0    0  613
+                                   Licensing  8-30 days         40          559     1.0  4.0  7.0   5.0    0  613
+                                   Licensing 31-90 days          9          559     1.0  4.0  7.0   5.0    0  613
+                                   Licensing   90+ days          4          559     1.0  4.0  7.0   5.0    0  613
+                    Office of the City Clerk     0 days        887         1689     0.0  1.0  5.0   2.8    0  885
+                    Office of the City Clerk   1-2 days        480         1689     0.0  1.0  5.0   2.8    0  885
+                    Office of the City Clerk   3-7 days        234         1689     0.0  1.0  5.0   2.8    0  885
+                    Office of the City Clerk  8-30 days         75         1689     0.0  1.0  5.0   2.8    0  885
+                    Office of the City Clerk 31-90 days         11         1689     0.0  1.0  5.0   2.8    0  885
+                    Office of the City Clerk   90+ days          2         1689     0.0  1.0  5.0   2.8    0  885
+                                     Parking     0 days      17737        23199     0.0  0.0  3.0   4.8    0 1322
+                                     Parking   1-2 days       2942        23199     0.0  0.0  3.0   4.8    0 1322

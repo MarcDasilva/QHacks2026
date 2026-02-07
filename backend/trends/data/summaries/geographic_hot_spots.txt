@@ -1,0 +1,25 @@
+# Data Summary: geographic_hot_spots
+# Generated: 2026-02-07 15:46:55
+# Description: Geographic clustering of service requests by ward/area
+# Source File: geographic_hot_spots.csv
+# Filter: None
+# Use Cases: spatial analysis, resource deployment, area-specific issues
+# Metrics: request_count, geographic coordinates
+================================================================================
+
+Shape: 12 rows × 4 columns
+Columns: electoral_district, volume, unresolved, slow_p90
+
+    electoral_district  volume  unresolved  slow_p90
+           King’s Town    8394           2       8.0
+              Sydenham    6832           1       5.0
+         Williamsville    4382           2      10.0
+     Kingscourt-Rideau    4363           5      26.0
+    Loyalist-Cataraqui    4336           8      29.3
+            Pittsburgh    4013           5      32.0
+              Trillium    3435           4      16.0
+           Countryside    3410           3      64.0
+            Portsmouth    3345           2      23.0
+      Collins-Bayridge    3331           3      30.0
+Meadowbrook-Strathcona    3297           2      28.0
+              Lakeside    3249           9      33.1

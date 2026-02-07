@@ -1,0 +1,33 @@
+# Data Summary: backlog_ranked_list
+# Generated: 2026-02-07 15:46:55
+# Description: Unresolved service requests ranked by count and average age
+# Source File: backlog_ranked_list.csv
+# Filter: None
+# Use Cases: identify aging issues, urgent unresolved items, backlog management
+# Metrics: unresolved_count, avg_age_days
+================================================================================
+
+Shape: 20 rows × 4 columns
+Columns: Service Level 1, Service Level 2, unresolved_count, avg_age_days
+
+                             Service Level 1                        Service Level 2  unresolved_count  avg_age_days
+                Roads, traffic and sidewalks                Traffic and road safety                55   1213.527273
+                Roads, traffic and sidewalks                 Sidewalks and walkways                13   1139.769231
+                Roads, traffic and sidewalks                             Road signs                 6   1304.333333
+                Roads, traffic and sidewalks                                  Roads                 4    985.000000
+                Roads, traffic and sidewalks                                Cycling                 3   1023.333333
+                Roads, traffic and sidewalks                      Customer comments                 1   1191.000000
+Engineering, infrastructure and construction          Construction project timeline                 2   1447.000000
+Engineering, infrastructure and construction  Debris on road from construction site                 2   1467.000000
+Engineering, infrastructure and construction                               Blasting                 1   1564.000000
+Engineering, infrastructure and construction         Community mailbox installation                 1    786.000000
+Engineering, infrastructure and construction Construction equipment blocking access                 1   1481.000000
+Engineering, infrastructure and construction     Construction equipment left behind                 1   1562.000000
+Engineering, infrastructure and construction            Construction safety concern                 1   1548.000000
+Engineering, infrastructure and construction                      Customer comments                 1   1408.000000
+Engineering, infrastructure and construction                Permits and regulations                 1   1639.000000
+                                       Trees                        Tree assessment                 3   1349.333333
+                                       Trees                           Tree removal                 1   1619.000000
+                                       Parks                          Park features                 2   1162.000000
+                            Arts and culture                          Arts programs                 1    897.000000
+                                    Building                       Building permits                 1   1033.000000

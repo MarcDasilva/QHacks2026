@@ -1,0 +1,20 @@
+# Data Summary: backlog_distribution
+# Generated: 2026-02-07 15:46:55
+# Description: Distribution of open backlogs across service categories
+# Source File: backlog_distribution.csv
+# Filter: None
+# Use Cases: backlog overview, resource allocation, workload distribution
+# Metrics: open_count, percentage
+================================================================================
+
+Shape: 7 rows × 3 columns
+Columns: age_bin, Service Level 1, count
+
+  age_bin                              Service Level 1  count
+1-2 years                 Roads, traffic and sidewalks      3
+ 2+ years                 Roads, traffic and sidewalks     79
+ 2+ years Engineering, infrastructure and construction     11
+ 2+ years                                        Trees      4
+ 2+ years                                        Parks      2
+ 2+ years                             Arts and culture      1
+ 2+ years                                     Building      1

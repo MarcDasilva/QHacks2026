@@ -1,0 +1,23 @@
+# Data Summary: top10_backlog_age
+# Generated: 2026-02-07 15:46:55
+# Description: Top 10 categories with oldest backlog (by P90 age)
+# Source File: top10.csv
+# Filter: ranking_type == 'Backlog Age'
+# Use Cases: identify aging backlogs, urgent old items, overdue requests
+# Metrics: p90_age_days, avg_age_days, open_count
+================================================================================
+
+Shape: 10 rows × 9 columns
+Columns: ranking_type, rank, category, primary_metric, primary_metric_name, secondary_metric, secondary_metric_name, tertiary_metric, tertiary_metric_name
+
+ranking_type  rank                                     category  primary_metric primary_metric_name  secondary_metric secondary_metric_name  tertiary_metric tertiary_metric_name
+ Backlog Age     1                 Roads, traffic and sidewalks           133.0        p90_age_days              54.2          avg_age_days             82.0           open_count
+ Backlog Age     2 Engineering, infrastructure and construction           100.0        p90_age_days              59.2          avg_age_days             11.0           open_count
+ Backlog Age     3                                  Real estate            55.0        p90_age_days              20.6          avg_age_days              0.0           open_count
+ Backlog Age     4                                        Parks            47.0        p90_age_days              31.2          avg_age_days              2.0           open_count
+ Backlog Age     5                                     Planning            46.4        p90_age_days              25.9          avg_age_days              0.0           open_count
+ Backlog Age     6                                        Trees            38.0        p90_age_days              26.0          avg_age_days              4.0           open_count
+ Backlog Age     7                                     Building             9.0        p90_age_days              12.9          avg_age_days              1.0           open_count
+ Backlog Age     8                                  Environment             8.1        p90_age_days               5.8          avg_age_days              0.0           open_count
+ Backlog Age     9                             Arts and culture             8.0        p90_age_days              11.5          avg_age_days              1.0           open_count
+ Backlog Age    10                                      Transit             8.0        p90_age_days              13.4          avg_age_days              0.0           open_count

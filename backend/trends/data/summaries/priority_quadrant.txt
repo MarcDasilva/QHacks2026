@@ -1,0 +1,29 @@
+# Data Summary: priority_quadrant
+# Generated: 2026-02-07 15:46:55
+# Description: Priority matrix combining volume and time-to-close (P90)
+# Source File: priority_quadrant_data_p90.csv
+# Filter: None
+# Use Cases: prioritization, strategic planning, resource optimization
+# Metrics: volume, p90_days, quadrant assignment
+================================================================================
+
+Shape: 16 rows × 8 columns
+Columns: group, request_count, time_to_close_days, open_count, recent_volume, bubble_size, closed_count, priority_category
+
+                                       group  request_count  time_to_close_days  open_count  recent_volume  bubble_size  closed_count        priority_category
+             Garbage, recycling and organics          40526                 3.0           0            390            0         40526          Medium Priority
+                Roads, traffic and sidewalks          24091               125.2          82            562           82         24009 High Priority (Systemic)
+                                     Parking          23199                 3.0           0            410            0         23199          Medium Priority
+                      Recreation and leisure          11875                 4.0           0            663            0         11875          Medium Priority
+                                     Transit           7912                 8.0           0            185            0          7912          Medium Priority
+                                       Trees           7909                38.0           4            330            4          7905 High Priority (Systemic)
+                                City General           6627                 3.0           0            189            0          6627          Medium Priority
+                                    Building           5059                 9.0           1            422            1          5058 High Priority (Systemic)
+                                       Parks           4448                46.5           2            140            2          4446          Medium Priority
+                    Office of the City Clerk           1689                 5.0           0             94            0          1689             Low Priority
+Engineering, infrastructure and construction           1623                91.9          11             85           11          1612          Medium Priority
+                                    Planning            865                46.4           0             51            0           865          Medium Priority
+                                   Licensing            559                 7.0           0             47            0           559             Low Priority
+                            Arts and culture            171                 8.0           1             10            1           170             Low Priority
+                                 Environment            160                 8.1           0              3            0           160          Medium Priority
+                                 Real estate             31                55.0           0              3            0            31          Medium Priority

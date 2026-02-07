@@ -1,0 +1,23 @@
+# Data Summary: top10_worst_p90_time
+# Generated: 2026-02-07 15:46:55
+# Description: Top 10 categories with worst P90 time-to-close performance
+# Source File: top10.csv
+# Filter: ranking_type == 'Worst P90 Time-to-Close'
+# Use Cases: identify bottlenecks, SLA violations, performance issues
+# Metrics: p90_days, median_days, request_count
+================================================================================
+
+Shape: 10 rows × 9 columns
+Columns: ranking_type, rank, category, primary_metric, primary_metric_name, secondary_metric, secondary_metric_name, tertiary_metric, tertiary_metric_name
+
+           ranking_type  rank                                     category  primary_metric primary_metric_name  secondary_metric secondary_metric_name  tertiary_metric tertiary_metric_name
+Worst P90 Time-to-Close     1                 Roads, traffic and sidewalks           125.2            p90_days               2.0           median_days          24009.0        request_count
+Worst P90 Time-to-Close     2 Engineering, infrastructure and construction            91.9            p90_days               2.0           median_days           1612.0        request_count
+Worst P90 Time-to-Close     3                                  Real estate            55.0            p90_days               1.0           median_days             31.0        request_count
+Worst P90 Time-to-Close     4                                        Parks            46.5            p90_days               2.0           median_days           4446.0        request_count
+Worst P90 Time-to-Close     5                                     Planning            46.4            p90_days               2.0           median_days            865.0        request_count
+Worst P90 Time-to-Close     6                                        Trees            38.0            p90_days               3.0           median_days           7905.0        request_count
+Worst P90 Time-to-Close     7                                     Building             9.0            p90_days               2.0           median_days           5058.0        request_count
+Worst P90 Time-to-Close     8                                  Environment             8.1            p90_days               0.0           median_days            160.0        request_count
+Worst P90 Time-to-Close     9                             Arts and culture             8.0            p90_days               0.0           median_days            170.0        request_count
+Worst P90 Time-to-Close    10                                      Transit             8.0            p90_days               0.0           median_days           7912.0        request_count

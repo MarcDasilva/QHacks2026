@@ -1,0 +1,23 @@
+# Data Summary: top10_trending_up
+# Generated: 2026-02-07 15:46:55
+# Description: Top 10 categories trending upward in volume
+# Source File: top10.csv
+# Filter: ranking_type == 'Trending Up'
+# Use Cases: emerging issues, growing demand, proactive planning
+# Metrics: absolute_change, growth_rate, recent_volume
+================================================================================
+
+Shape: 10 rows × 9 columns
+Columns: ranking_type, rank, category, primary_metric, primary_metric_name, secondary_metric, secondary_metric_name, tertiary_metric, tertiary_metric_name
+
+ranking_type  rank                                     category  primary_metric primary_metric_name  secondary_metric secondary_metric_name  tertiary_metric tertiary_metric_name
+ Trending Up     1                       Recreation and leisure           280.0     absolute_change              73.1           growth_rate            663.0        recent_volume
+ Trending Up     2                                        Trees           172.0     absolute_change             108.9           growth_rate            330.0        recent_volume
+ Trending Up     3                 Roads, traffic and sidewalks            99.0     absolute_change              21.4           growth_rate            562.0        recent_volume
+ Trending Up     4                                 City General            79.0     absolute_change              71.8           growth_rate            189.0        recent_volume
+ Trending Up     5                                     Building            78.0     absolute_change              22.7           growth_rate            422.0        recent_volume
+ Trending Up     6 Engineering, infrastructure and construction            43.0     absolute_change             102.4           growth_rate             85.0        recent_volume
+ Trending Up     7                     Office of the City Clerk            29.0     absolute_change              44.6           growth_rate             94.0        recent_volume
+ Trending Up     8                                        Parks            25.0     absolute_change              21.7           growth_rate            140.0        recent_volume
+ Trending Up     9                                      Parking            22.0     absolute_change               5.7           growth_rate            410.0        recent_volume
+ Trending Up    10                                     Planning            11.0     absolute_change              27.5           growth_rate             51.0        recent_volume

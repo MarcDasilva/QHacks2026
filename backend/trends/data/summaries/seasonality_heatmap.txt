@@ -1,0 +1,29 @@
+# Data Summary: seasonality_heatmap
+# Generated: 2026-02-07 15:46:55
+# Description: Day-of-week and month patterns for service requests
+# Source File: seasonality_heatmap.csv
+# Filter: None
+# Use Cases: seasonal patterns, staffing planning, cyclical trends
+# Metrics: request counts by time periods
+================================================================================
+
+Shape: 16 rows × 13 columns
+Columns: Service Category, January, February, March, April, May, June, July, August, September, October, November, December
+
+                            Service Category  January  February  March  April   May   June       July  August  September  October  November  December
+             Garbage, recycling and organics   628.00    540.00  584.0  826.8 715.0 692.20 742.750000  719.75     674.75    752.8     965.2    691.40
+                Roads, traffic and sidewalks   484.20    431.00  397.4  431.4 490.0 492.80 446.250000  430.25     431.00    369.8     357.2    318.40
+                                     Parking   460.80    410.80  424.0  325.2 357.6 371.60 393.500000  455.25     408.50    448.8     446.4    388.80
+                      Recreation and leisure   219.00    209.20  216.8  223.6 163.6 223.60 196.750000  223.75     269.75    175.4     198.0    193.60
+                                       Trees    43.60     39.40   74.8  123.0 195.4 262.00 240.750000  237.50     180.25    137.6     116.2     63.00
+                                     Transit   110.20    119.60  173.0  127.0 137.0 147.80 131.750000  144.25     156.75    155.4     143.8    122.40
+                                City General   119.80    110.80  119.0   94.4 113.0 133.80 107.500000  124.25     143.25    108.4     125.2    101.00
+                                    Building    58.40     55.20   82.4  171.2 180.8 145.40  75.500000   77.00      54.50     56.0      52.4     44.40
+                                       Parks    30.80     26.40   55.0   94.4 131.4 146.20 139.500000  114.25      79.50     63.0      50.2     25.60
+                    Office of the City Clerk    24.80     29.60   29.4   35.6  36.0  42.20  21.500000   23.25      18.50     51.2      23.6     14.80
+Engineering, infrastructure and construction    19.80     20.60   28.8   32.2  38.8  47.00  29.750000   35.75      24.75     23.6      22.4     19.20
+                                    Planning    10.20     11.60   14.4   21.4  25.8  21.60  17.000000   13.75      16.00     10.0      15.0      8.60
+                                   Licensing     6.00      9.00   11.2   20.6  18.4  15.00   7.500000    7.50       2.50      6.2       7.0      5.50
+                            Arts and culture     1.80      1.50    4.0    3.4   4.0   6.25   3.666667    5.00       3.00      2.2       3.0      2.00
+                                 Environment     2.00      1.75    2.0    4.8   3.6   5.75   2.250000    4.25       1.50      3.2       3.0      1.75
+                                 Real estate     1.75      1.00    1.0    1.0   1.0   3.00   2.500000    1.00       1.00      1.0       1.0      1.00

@@ -1,0 +1,23 @@
+# Data Summary: top10_geographic_hotspots
+# Generated: 2026-02-07 15:46:55
+# Description: Top 10 geographic areas by service request volume
+# Source File: top10.csv
+# Filter: ranking_type == 'Geographic Hotspots'
+# Use Cases: area-specific issues, resource deployment, geographic priorities
+# Metrics: volume, pct_of_total, top_category
+================================================================================
+
+Shape: 10 rows × 9 columns
+Columns: ranking_type, rank, category, primary_metric, primary_metric_name, secondary_metric, secondary_metric_name, tertiary_metric, tertiary_metric_name
+
+       ranking_type  rank                            category  primary_metric primary_metric_name  secondary_metric secondary_metric_name  tertiary_metric                          tertiary_metric_name
+Geographic Hotspots     1                       Inner Harbour           117.0              volume             11.32          pct_of_total              NaN                    top_category: City General
+Geographic Hotspots     2                            Sydenham           114.0              volume             11.03          pct_of_total              NaN                         top_category: Parking
+Geographic Hotspots     3                 Cataraqui Westbrook            71.0              volume              6.87          pct_of_total              NaN top_category: Garbage, recycling and organics
+Geographic Hotspots     4                           Sunnyside            68.0              volume              6.58          pct_of_total              NaN                    top_category: City General
+Geographic Hotspots     5        Kingscourt / Novelis (Alcan)            47.0              volume              4.55          pct_of_total              NaN    top_category: Roads, traffic and sidewalks
+Geographic Hotspots     6             Gardiners / Meadowbrook            45.0              volume              4.35          pct_of_total              NaN top_category: Garbage, recycling and organics
+Geographic Hotspots     7                      Rideau Heights            45.0              volume              4.35          pct_of_total              NaN    top_category: Roads, traffic and sidewalks
+Geographic Hotspots     8 Greenwood Park / St. Lawrence South            42.0              volume              4.06          pct_of_total              NaN    top_category: Roads, traffic and sidewalks
+Geographic Hotspots     9                             Queen's            40.0              volume              3.87          pct_of_total              NaN                         top_category: Parking
+Geographic Hotspots    10                           Westwoods            34.0              volume              3.29          pct_of_total              NaN    top_category: Roads, traffic and sidewalks
