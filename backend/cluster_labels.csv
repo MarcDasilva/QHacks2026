@@ -1,0 +1,276 @@
+Level,Parent Cluster ID,Cluster ID,Examples,Label,Top Service Types
+Top-level,,0,1451,Meter Receipt Issue,"One time room booking (334), Room booking (301), One time marina booking (273)"
+Top-level,,1,5079,Meter Transaction Error,"No collection - recycling (1886), Curbside collection acceptable items (1553), Holiday curbside collection schedule (609)"
+Top-level,,2,6981,Parking Exemption,"Parking exemption (6649), Parking policy inquiry (311), Accessible parking (request for new) (21)"
+Top-level,,3,3349,Holiday Collection Schedule,"Meter not accepting coin (892), Meter not printing receipt (730), Meter transaction error message (435)"
+Top-level,,4,3061,Toter Replacement,"Road kill (734), Debris on road (349), Roadside grass cutting (328)"
+Top-level,,5,2678,Curbside Program Notices,"KARC depot (988), Residential HHW (732), Household hazardous waste depot (695)"
+Top-level,,6,2008,Sidewalk Waste Services,"Tree trimming (1053), Tree removal (707), Stump removal (134)"
+Top-level,,7,1714,New Toter Request,"New, broken or lost recycle box pick up (1072), New, broken or lost green bin pick up (642)"
+Top-level,,8,3844,Accessible Parking Request,"New construction, addition and alteration permit (748), DASH (556), Building inspections (244)"
+Top-level,,9,2462,Toter Repair,"Pothole (1566), Road flooding or drainage issue (301), Culvert (246)"
+Top-level,,10,5071,Missed Collection,No collection (5071)
+Top-level,,11,3461,Transit Information,"Transit schedule time (1573), Transit route planning (525), Website trip planner (326)"
+Top-level,,12,1286,Arena Bookings,"Arena booking (555), One time arena booking (529), Partner group arena booking (110)"
+Top-level,,13,413,Transit Maintenance,"Damage / maintenance at transit stop (222), Transit stop question (65), Damage / maintenance to bus (47)"
+Top-level,,14,1794,Traffic Safety,"Traffic calming (458), Traffic or transportation inquiry (317), Pedestrian safety concern or crossing inquiry (237)"
+Top-level,,15,1611,Account Services,"Refunds or cancellations (917), Memberships (536), Account management (158)"
+Top-level,,16,1819,Sign & Pathway Repair,"Sign repair and replacement / change (892), General repairs - sidewalk / walkway / pathway (363), New sign installment (348)"
+Top-level,,17,963,Municipal Information,"Other municipality notices (395), Committee and board application / recruitment inquiry (61), Illuminations (57)"
+Top-level,,18,1964,Snow Removal,"Sidewalk snow plowing (500), Road snow plowing (444), Road snow removal (268)"
+Top-level,,19,1620,Illegal Dumping,"Roadside illegal dumping pick up (1299), Illegal dumping in park pick up (318), Discharge to storm sewer (3)"
+Top-level,,20,1387,Swim Programs,"Registered swim (497), Registration inquiries (285), Drop-in swim (180)"
+Top-level,,21,6533,Waste Disposal,"Large item disposal (960), Bin placement and disposal instructions (845), Yard waste disposal (751)"
+Top-level,,22,1927,Public Tree Services,"Tree assessment (1142), New tree on City property (244), Replacement tree on City property (177)"
+Top-level,,23,2140,Missed Garbage Collection,No collection - garbage / green bin - bag + bin (2140)
+Top-level,,24,3756,Public Amenities,"Parking lot and garage information (567), Memorial bench (185), Trails and pathways (180)"
+Sub-cluster,0,0,335,Meter Receipt Issue,"Room booking (301), Recurring room booking (23), Partner group room booking (8)"
+Sub-cluster,0,1,273,Meter Transaction Error,One time marina booking (273)
+Sub-cluster,0,2,2,Parking Exemption,Memorial Hall wedding booking (2)
+Sub-cluster,0,3,334,Holiday Collection Schedule,One time room booking (334)
+Sub-cluster,0,4,185,Toter Replacement,"Seasonal marina booking (183), Marina haul out and launch (1), Marina booking (1)"
+Sub-cluster,0,5,83,Curbside Program Notices,"Pool booking (45), One time pool booking (29), School group pool booking (7)"
+Sub-cluster,0,6,183,Sidewalk Waste Services,"One time sportsfield booking (82), Sportsfield booking (64), School group sportsfield booking (14)"
+Sub-cluster,0,7,36,New Toter Request,City Hall meeting room booking (36)
+Sub-cluster,0,8,20,Accessible Parking Request,Birthday party pool booking (20)
+Sub-cluster,0,9,0,EMPTY,
+Sub-cluster,1,0,1553,Meter Receipt Issue,Curbside collection acceptable items (1553)
+Sub-cluster,1,1,1886,Meter Transaction Error,No collection - recycling (1886)
+Sub-cluster,1,2,455,Parking Exemption,Regular curbside collection schedule (455)
+Sub-cluster,1,3,609,Holiday Collection Schedule,Holiday curbside collection schedule (609)
+Sub-cluster,1,4,148,Toter Replacement,Toter replacement (148)
+Sub-cluster,1,5,105,Curbside Program Notices,"Curbside notifications (104), Curbside audits (1)"
+Sub-cluster,1,6,135,Sidewalk Waste Services,"Sidewalk garbage collection (65), New sidewalk garbage / recycling bin (46), Sidewalk recycling depot graffiti removal (15)"
+Sub-cluster,1,7,52,New Toter Request,Toter request for new (52)
+Sub-cluster,1,8,70,Accessible Parking Request,"Commercial recycling program (40), Apartment recycling program (30)"
+Sub-cluster,1,9,66,Toter Repair,Toter repair (66)
+Sub-cluster,2,0,6568,Meter Receipt Issue,Parking exemption (6568)
+Sub-cluster,2,1,311,Meter Transaction Error,Parking policy inquiry (311)
+Sub-cluster,2,2,81,Parking Exemption,Parking exemption (81)
+Sub-cluster,2,3,0,EMPTY,
+Sub-cluster,2,4,0,EMPTY,
+Sub-cluster,2,5,0,EMPTY,
+Sub-cluster,2,6,0,EMPTY,
+Sub-cluster,2,7,0,EMPTY,
+Sub-cluster,2,8,21,Accessible Parking Request,Accessible parking (request for new) (21)
+Sub-cluster,2,9,0,EMPTY,
+Sub-cluster,3,0,730,Meter Receipt Issue,Meter not printing receipt (730)
+Sub-cluster,3,1,435,Meter Transaction Error,Meter transaction error message (435)
+Sub-cluster,3,2,892,Road Flooding Issue,Meter not accepting coin (892)
+Sub-cluster,3,3,138,Waaban Crossing Project,Meter frozen (138)
+Sub-cluster,3,4,333,Zoning & Deck Permits,"Meter not accepting card (330), Meter malfunction (3)"
+Sub-cluster,3,5,287,Construction Project Issues,Meter payment investigation (287)
+Sub-cluster,3,6,261,Land Use Planning,Meter time display problem (261)
+Sub-cluster,3,7,155,Specific Permits Inquiry,Meter information (155)
+Sub-cluster,3,8,89,Engineering Service Feedback,Meter vandalism (89)
+Sub-cluster,3,9,29,Plumbing Permits,Meter credit card stuck (29)
+Sub-cluster,4,0,454,Catch Basin Maintenance,"Roadside grass cutting (328), Roadside brushing - overgrowth (86), Civic blade (38)"
+Sub-cluster,4,1,501,Pothole Repair,"Debris on road (349), Barricades / pylons (85), Debris on road from construction site (46)"
+Sub-cluster,4,2,734,Road Flooding Issue,Road kill (734)
+Sub-cluster,4,3,260,Waaban Crossing Project,Street sweeping (260)
+Sub-cluster,4,4,397,Zoning & Deck Permits,"Minor road paving (226), Road or lane closure (92), Large scale road paving (73)"
+Sub-cluster,4,5,114,Construction Project Issues,Hedge or branch trimming along sidewalk (114)
+Sub-cluster,4,6,103,Land Use Planning,"Line painting (101), Damage or vandalism to public art (2)"
+Sub-cluster,4,7,95,Specific Permits Inquiry,Road shoulder (95)
+Sub-cluster,4,8,297,Engineering Service Feedback,"Cleaning - sidewalk and walkway (149), Curb maintenance (92), Bicycle lane maintenance (36)"
+Sub-cluster,4,9,106,Plumbing Permits,Roadside noxious weeds (106)
+Sub-cluster,5,0,698,Catch Basin Maintenance,"Household hazardous waste depot (695), Chemical / hazardous waste container (3)"
+Sub-cluster,5,1,982,Pothole Repair,KARC depot (982)
+Sub-cluster,5,2,732,Road Flooding Issue,Residential HHW (732)
+Sub-cluster,5,3,164,Waaban Crossing Project,Residential electronic equipment (164)
+Sub-cluster,5,4,6,Zoning & Deck Permits,KARC depot (6)
+Sub-cluster,5,5,47,Construction Project Issues,Household hazardous waste (HHW) disposal (47)
+Sub-cluster,5,6,39,Land Use Planning,Commercial HHW (39)
+Sub-cluster,5,7,0,EMPTY,
+Sub-cluster,5,8,10,Engineering Service Feedback,KARC tours (10)
+Sub-cluster,5,9,0,EMPTY,
+Sub-cluster,6,0,0,EMPTY,
+Sub-cluster,6,1,359,Pothole Repair,Tree removal (359)
+Sub-cluster,6,2,114,Road Flooding Issue,"Brush pick up (113), Leaf raking / pick up (1)"
+Sub-cluster,6,3,3,Waaban Crossing Project,Stump removal (3)
+Sub-cluster,6,4,0,EMPTY,
+Sub-cluster,6,5,345,Construction Project Issues,Tree removal (345)
+Sub-cluster,6,6,3,Land Use Planning,Tree removal (3)
+Sub-cluster,6,7,1053,Specific Permits Inquiry,Tree trimming (1053)
+Sub-cluster,6,8,131,Engineering Service Feedback,Stump removal (131)
+Sub-cluster,6,9,0,EMPTY,
+Sub-cluster,7,0,1050,Catch Basin Maintenance,"New, broken or lost recycle box pick up (1050)"
+Sub-cluster,7,1,633,Pothole Repair,"New, broken or lost green bin pick up (633)"
+Sub-cluster,7,2,0,EMPTY,
+Sub-cluster,7,3,0,EMPTY,
+Sub-cluster,7,4,0,EMPTY,
+Sub-cluster,7,5,9,Construction Project Issues,"New, broken or lost green bin pick up (9)"
+Sub-cluster,7,6,0,EMPTY,
+Sub-cluster,7,7,0,EMPTY,
+Sub-cluster,7,8,22,Engineering Service Feedback,"New, broken or lost recycle box pick up (22)"
+Sub-cluster,7,9,0,EMPTY,
+Sub-cluster,8,0,748,Catch Basin Maintenance,"New construction, addition and alteration permit (748)"
+Sub-cluster,8,1,313,Pothole Repair,"Building inspections (244), General building inquiry (60), Environmental inspection (9)"
+Sub-cluster,8,2,556,Road Flooding Issue,DASH (556)
+Sub-cluster,8,3,102,Waaban Crossing Project,Waaban Crossing (Third Crossing) (102)
+Sub-cluster,8,4,962,Zoning & Deck Permits,"Zoning - building permit (132), Zoning (129), Deck permit (118)"
+Sub-cluster,8,5,315,Construction Project Issues,"Construction project timeline (100), Construction safety concern (59), Construction equipment blocking access (33)"
+Sub-cluster,8,6,225,Land Use Planning,"Land use planning projects and studies (102), Personal property development or planning inquiry (67), Development applications - process and approvals (23)"
+Sub-cluster,8,7,447,Specific Permits Inquiry,"Encroachment permit (85), Vehicle size or weight regulations (62), Outdoor patio permits (49)"
+Sub-cluster,8,8,64,Engineering Service Feedback,"Service feedback - Engineering, infrastructure and construction (58), Service praise - Engineering, infrastructure and construction (5), Service complaint - Engineering, infrastructure and construction (1)"
+Sub-cluster,8,9,112,Plumbing Permits,"Plumbing permit (110), Plumbing services (2)"
+Sub-cluster,9,0,160,Catch Basin Maintenance,Catch basin (160)
+Sub-cluster,9,1,21,Pothole Repair,Pothole (21)
+Sub-cluster,9,2,301,Road Flooding Issue,Road flooding or drainage issue (301)
+Sub-cluster,9,3,91,Pedestrian Safety Inquiry,Culvert (91)
+Sub-cluster,9,4,51,Civic Address Inquiry,Stormwater (51)
+Sub-cluster,9,5,71,Traffic & Pathway Inquiry,Sink hole (71)
+Sub-cluster,9,6,67,Account Management,Ditch issue (67)
+Sub-cluster,9,7,0,EMPTY,
+Sub-cluster,9,8,155,Red Light Camera,Culvert (155)
+Sub-cluster,9,9,1545,Membership Inquiry,Pothole (1545)
+Sub-cluster,10,0,0,EMPTY,
+Sub-cluster,10,1,73,Sign Repair Replacement,No collection (73)
+Sub-cluster,10,2,0,EMPTY,
+Sub-cluster,10,3,4995,Pedestrian Safety Inquiry,No collection (4995)
+Sub-cluster,10,4,3,Civic Address Inquiry,No collection (3)
+Sub-cluster,10,5,0,EMPTY,
+Sub-cluster,10,6,0,EMPTY,
+Sub-cluster,10,7,0,EMPTY,
+Sub-cluster,10,8,0,EMPTY,
+Sub-cluster,10,9,0,EMPTY,
+Sub-cluster,11,0,1573,New Sign Installation,Transit schedule time (1573)
+Sub-cluster,11,1,419,Sign Repair Replacement,"Bus late (277), Bus early (120), Transfer problem (22)"
+Sub-cluster,11,2,160,Sidewalk Pathway Repair,"Field trip / school (135), School transit orientation / training (22), Partnerships (2)"
+Sub-cluster,11,3,527,Pedestrian Safety Inquiry,"Transit route planning (525), Charter (2)"
+Sub-cluster,11,4,331,Civic Address Inquiry,"Website trip planner (326), Mobile trip planner (5)"
+Sub-cluster,11,5,0,EMPTY,
+Sub-cluster,11,6,210,Account Management,"Frequency and transit schedule (58), New transit route (50), Kingston Access Bus (35)"
+Sub-cluster,11,7,170,School Zone Safety,"Bus did not arrive (166), Internal bus announcement not functioning (4)"
+Sub-cluster,11,8,40,Red Light Camera,Transit detour information (40)
+Sub-cluster,11,9,31,Membership Inquiry,Inside bus temperature (31)
+Sub-cluster,12,0,70,New Sign Installation,"Adult user group arena booking (47), School group arena booking (23)"
+Sub-cluster,12,1,515,Sign Repair Replacement,One time arena booking (515)
+Sub-cluster,12,2,9,Sidewalk Pathway Repair,"Tournament sportsfield booking (5), Tournament arena booking (4)"
+Sub-cluster,12,3,110,Pedestrian Safety Inquiry,Partner group arena booking (110)
+Sub-cluster,12,4,0,EMPTY,
+Sub-cluster,12,5,13,Traffic & Pathway Inquiry,Floor booking - no ice (13)
+Sub-cluster,12,6,14,Account Management,One time arena booking (14)
+Sub-cluster,12,7,555,School Zone Safety,Arena booking (555)
+Sub-cluster,12,8,0,EMPTY,
+Sub-cluster,12,9,0,EMPTY,
+Sub-cluster,13,0,65,New Sign Installation,Transit stop question (65)
+Sub-cluster,13,1,0,EMPTY,
+Sub-cluster,13,2,222,Sidewalk Pathway Repair,Damage / maintenance at transit stop (222)
+Sub-cluster,13,3,0,EMPTY,
+Sub-cluster,13,4,0,EMPTY,
+Sub-cluster,13,5,47,Traffic & Pathway Inquiry,Damage / maintenance to bus (47)
+Sub-cluster,13,6,36,Account Management,"Shelter or bench at transit stop (28), Blocked access to transit stop (8)"
+Sub-cluster,13,7,0,EMPTY,
+Sub-cluster,13,8,14,Red Light Camera,Graffiti removal at transit stop (14)
+Sub-cluster,13,9,29,Membership Inquiry,New transit stop (29)
+Sub-cluster,14,0,75,New Sign Installation,Sidewalk and walkway inquiry (new or change) (75)
+Sub-cluster,14,1,235,Sign Repair Replacement,Traffic signal inquiry (235)
+Sub-cluster,14,2,459,Sidewalk Pathway Repair,"Traffic calming (458), Quiet Streets (1)"
+Sub-cluster,14,3,237,Pedestrian Safety Inquiry,Pedestrian safety concern or crossing inquiry (237)
+Sub-cluster,14,4,190,Civic Address Inquiry,"Other roads, traffic and sidewalks complaint (84), Other roads, traffic and sidewalks feedback (74), Construction site traffic issues (25)"
+Sub-cluster,14,5,393,Traffic & Pathway Inquiry,"Traffic or transportation inquiry (317), Bicycle lane or pathway inquiry (47), Turtle concern (20)"
+Sub-cluster,14,6,58,Account Management,Streetlights (58)
+Sub-cluster,14,7,77,School Zone Safety,School area safety (77)
+Sub-cluster,14,8,29,Red Light Camera,Red light camera program inquiry (29)
+Sub-cluster,14,9,41,Membership Inquiry,"Other roads, traffic and sidewalks praise (41)"
+Sub-cluster,15,0,917,New Sign Installation,Refunds or cancellations (917)
+Sub-cluster,15,1,0,EMPTY,
+Sub-cluster,15,2,156,Sidewalk Pathway Repair,Account management (156)
+Sub-cluster,15,3,0,EMPTY,
+Sub-cluster,15,4,528,Civic Address Inquiry,Memberships (528)
+Sub-cluster,15,5,0,EMPTY,
+Sub-cluster,15,6,2,Account Management,Account management (2)
+Sub-cluster,15,7,0,EMPTY,
+Sub-cluster,15,8,0,EMPTY,
+Sub-cluster,15,9,8,Membership Inquiry,Memberships (8)
+Sub-cluster,16,0,348,New Sign Installation,New sign installment (348)
+Sub-cluster,16,1,892,Sign Repair Replacement,Sign repair and replacement / change (892)
+Sub-cluster,16,2,363,Sidewalk Pathway Repair,General repairs - sidewalk / walkway / pathway (363)
+Sub-cluster,16,3,0,EMPTY,
+Sub-cluster,16,4,47,Civic Address Inquiry,Civic addresses / street naming (47)
+Sub-cluster,16,5,30,Park Waste Management,"Emergency road repairs (24), Bicycle rack repairs (6)"
+Sub-cluster,16,6,76,Waste Bag Limits,Signs - permanent (76)
+Sub-cluster,16,7,56,Waste Service Feedback,"Graffiti removal from road sign (51), Sign removal (5)"
+Sub-cluster,16,8,0,EMPTY,
+Sub-cluster,16,9,7,Waste Bag Tags,"Missing road sign (6), External destination sign not functioning (1)"
+Sub-cluster,17,0,395,Tree Maintenance,Other municipality notices (395)
+Sub-cluster,17,1,92,Tree Bylaw Permit,"City Council meetings (27), Archived information - Council / committees (26), Meeting correspondence (19)"
+Sub-cluster,17,2,147,City Tree Replacement,"Municipal business licenses (44), Municipal election inquiry (39), Civic Awards (24)"
+Sub-cluster,17,3,59,Waste Bin Information,"Municipal events (55), Non-municipal external event (4)"
+Sub-cluster,17,4,61,Yard Waste Composting,Committee and board application / recruitment inquiry (61)
+Sub-cluster,17,5,62,Park Waste Management,"Non-municipal accessibility (53), Municipal accessibility (7), Municipal Accessibility Advisory Committee (1)"
+Sub-cluster,17,6,67,Waste Bag Limits,"Illuminations (57), Flag raisings (10)"
+Sub-cluster,17,7,8,Waste Service Feedback,Salons and esthetician services (8)
+Sub-cluster,17,8,26,Waste Collection Schedule,Proclamations (26)
+Sub-cluster,17,9,46,Waste Bag Tags,Freedom of Information (46)
+Sub-cluster,18,0,444,Tree Maintenance,Road snow plowing (444)
+Sub-cluster,18,1,239,Tree Bylaw Permit,Winter operations complaint (239)
+Sub-cluster,18,2,72,City Tree Replacement,"Road sanding / salt (68), Sand / salt pick up (4)"
+Sub-cluster,18,3,268,Waste Bin Information,Road snow removal (268)
+Sub-cluster,18,4,81,Yard Waste Composting,"Snow Angels submission (79), Snow Angels inquiry (2)"
+Sub-cluster,18,5,38,Park Waste Management,Snow removal or sanding at transit stop (38)
+Sub-cluster,18,6,500,Waste Bag Limits,Sidewalk snow plowing (500)
+Sub-cluster,18,7,58,Waste Service Feedback,Winter operations praise (58)
+Sub-cluster,18,8,209,Waste Collection Schedule,Sidewalk sanding / salt (209)
+Sub-cluster,18,9,55,Waste Bag Tags,Winter operations feedback (55)
+Sub-cluster,19,0,1246,Tree Maintenance,Roadside illegal dumping pick up (1246)
+Sub-cluster,19,1,318,Tree Bylaw Permit,Illegal dumping in park pick up (318)
+Sub-cluster,19,2,3,City Tree Replacement,Discharge to storm sewer (3)
+Sub-cluster,19,3,0,EMPTY,
+Sub-cluster,19,4,0,EMPTY,
+Sub-cluster,19,5,0,EMPTY,
+Sub-cluster,19,6,0,EMPTY,
+Sub-cluster,19,7,0,EMPTY,
+Sub-cluster,19,8,0,EMPTY,
+Sub-cluster,19,9,53,Waste Bag Tags,Roadside illegal dumping pick up (53)
+Sub-cluster,20,0,0,EMPTY,
+Sub-cluster,20,1,497,Tree Bylaw Permit,Registered swim (497)
+Sub-cluster,20,2,285,City Tree Replacement,Registration inquiries (285)
+Sub-cluster,20,3,180,Waste Bin Information,Drop-in swim (180)
+Sub-cluster,20,4,107,Yard Waste Composting,Program registration / PLAY (107)
+Sub-cluster,20,5,75,Park Waste Management,"Registered fitness class (38), Fitness centre (16), Open gym drop in / registration (15)"
+Sub-cluster,20,6,67,Waste Bag Limits,"Other recreational sports drop in / registration (17), Skating (12), Pickleball inquiry (11)"
+Sub-cluster,20,7,110,Waste Service Feedback,"Swimming lessons (96), Aquatics and swimming (12), Swimming programs (2)"
+Sub-cluster,20,8,39,Waste Collection Schedule,Drop-in fitness class (39)
+Sub-cluster,20,9,27,Waste Bag Tags,"Registered camp (26), Drop-in camp (1)"
+Sub-cluster,21,0,578,Tree Maintenance,Leaf collection schedule (578)
+Sub-cluster,21,1,142,Tree Bylaw Permit,"Medical exemption program (46), Apartment garbage program (30), Commercial garbage program (22)"
+Sub-cluster,21,2,1124,City Tree Replacement,"Large item disposal (960), Scrap metal disposal (81), Battery disposal (34)"
+Sub-cluster,21,3,845,Waste Bin Information,Bin placement and disposal instructions (845)
+Sub-cluster,21,4,1066,Yard Waste Composting,"Yard waste disposal (751), Debris left behind (174), Backyard composter (96)"
+Sub-cluster,21,5,562,Park Waste Management,"Debris / litter in park (209), Parks garbage / recycling collection (115), Return park garbage / recycling bin (66)"
+Sub-cluster,21,6,350,Waste Bag Limits,Bag limits (350)
+Sub-cluster,21,7,919,Waste Service Feedback,"Recycling complaint (223), Service feedback - Garbage, recycling and organics (223), Garbage complaint (218)"
+Sub-cluster,21,8,588,Waste Collection Schedule,"Brush collection schedule (313), Online waste collection calendar (195), App / collection reminder inquiry (45)"
+Sub-cluster,21,9,359,Waste Bag Tags,Bag tags (359)
+Sub-cluster,22,0,41,Tree Maintenance,"Tree watering (14), Wood (9), Market Square Christmas Tree (7)"
+Sub-cluster,22,1,47,Tree Bylaw Permit,"Tree bylaw (38), Tree permit (5), Trees bylaw (3)"
+Sub-cluster,22,2,177,City Tree Replacement,Replacement tree on City property (177)
+Sub-cluster,22,3,97,Parks Service Feedback,"Service complaint - Trees (42), Service feedback - Trees (34), Service praise - Trees (21)"
+Sub-cluster,22,4,35,Park Facility Issues,Emerald ash borer (EAB) (35)
+Sub-cluster,22,5,24,Sports Facility Inquiry,Mulch or wood chips (24)
+Sub-cluster,22,6,253,Park Bench Inquiry,"New tree on City property (244), Tree planting on private property (9)"
+Sub-cluster,22,7,1142,Playground Equipment Issue,Tree assessment (1142)
+Sub-cluster,22,8,88,HONK Mobile Parking,"Emergency tree issues (57), Sight line issue - branch or tree (28), Hazard or damaged tree (3)"
+Sub-cluster,22,9,23,Parking Rate Inquiry,Wasp / insect / item concern in tree (23)
+Sub-cluster,23,0,0,EMPTY,
+Sub-cluster,23,1,2100,Parking Lot Services,No collection - garbage / green bin - bag + bin (2100)
+Sub-cluster,23,2,40,Park Maintenance Request,No collection - garbage / green bin - bag + bin (40)
+Sub-cluster,23,3,0,EMPTY,
+Sub-cluster,23,4,0,EMPTY,
+Sub-cluster,23,5,0,EMPTY,
+Sub-cluster,23,6,0,EMPTY,
+Sub-cluster,23,7,0,EMPTY,
+Sub-cluster,23,8,0,EMPTY,
+Sub-cluster,23,9,0,EMPTY,
+Sub-cluster,24,0,41,Environmental Spill Report,Environmental spills (41)
+Sub-cluster,24,1,780,Parking Lot Services,"Parking lot and garage information (567), Parking lot malfunctioning gate (64), Parking lot snow removal (26)"
+Sub-cluster,24,2,446,Park Maintenance Request,"Trails and pathways (180), Grass cutting in park (175), Noxious weeds in park (63)"
+Sub-cluster,24,3,560,Parks Service Feedback,"Service feedback - Parks (109), Service complaint - Parks (96), Service complaint - Parking Operations (80)"
+Sub-cluster,24,4,990,Park Facility Issues,"Washrooms in park (132), Signage in park (90), Lighting in park (89)"
+Sub-cluster,24,5,338,Sports Facility Inquiry,"Tennis court (93), Outdoor rink (77), Indoor rink (45)"
+Sub-cluster,24,6,235,Park Bench Inquiry,"Memorial bench (185), Park bench (50)"
+Sub-cluster,24,7,98,Playground Equipment Issue,Playground equipment (98)
+Sub-cluster,24,8,93,HONK Mobile Parking,HONK mobile (93)
+Sub-cluster,24,9,175,Parking Rate Inquiry,"Hourly on-street parking payment rates (87), Parking lot payment rates (78), Bicycle parking or rack inquiry (10)"
