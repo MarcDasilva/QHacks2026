@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { SelectedCluster } from "@/types/clusters";
 
 const CRM_DATABASE_VALUE = "crm";
 
@@ -21,6 +22,18 @@ type DashboardContextValue = {
   expansionPhase: ExpansionPhase;
   showClusterView: boolean;
   ready: boolean;
+  /** When true, layout shifts Boohoo to the right and shows cluster dashboard (e.g. after user says "analysis"). */
+  showClusterDashboardAfterAnalysis: boolean;
+  setShowClusterDashboardAfterAnalysis: (v: boolean) => void;
+  /** When true, Rive shows "wow" (set true when cluster charts open, false after 1s). */
+  wow: boolean;
+  setWow: (v: boolean) => void;
+  /** Selected level-1 cluster for the 3D view (e.g. from cluster predictor follow-up). */
+  selectedCluster: SelectedCluster;
+  setSelectedCluster: (c: SelectedCluster) => void;
+  /** Glow mode (e.g. turned on after user follow-up "deep research"). */
+  showGlow: boolean;
+  setShowGlow: (v: boolean) => void;
 };
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
@@ -28,10 +41,31 @@ const DashboardContext = createContext<DashboardContextValue | null>(null);
 const EXPAND_MS = 900;
 const HOLD_MS = 2200;
 
-export function DashboardProvider({ children }: { children: ReactNode }) {
+type DashboardProviderProps = {
+  children: ReactNode;
+  /** Glow state (from layout) so overlay can turn glow on when backend sends glow_on */
+  showGlow?: boolean;
+  setShowGlow?: (v: boolean) => void;
+};
+
+export function DashboardProvider({
+  children,
+  showGlow: showGlowProp = false,
+  setShowGlow: setShowGlowProp,
+}: DashboardProviderProps) {
   const [selectedDatabase, setSelectedDatabase] = useState<string | null>(null);
   const [expansionPhase, setExpansionPhase] = useState<ExpansionPhase>("idle");
   const [ready, setReady] = useState(false);
+  const [
+    showClusterDashboardAfterAnalysis,
+    setShowClusterDashboardAfterAnalysis,
+  ] = useState(false);
+  const [wow, setWow] = useState(false);
+  const [selectedCluster, setSelectedCluster] = useState<SelectedCluster>(null);
+  const [internalGlow, setInternalGlow] = useState(false);
+  const showGlow = setShowGlowProp != null ? showGlowProp : internalGlow;
+  const setShowGlow =
+    setShowGlowProp != null ? setShowGlowProp : setInternalGlow;
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const readyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -91,6 +125,14 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     expansionPhase,
     showClusterView,
     ready,
+    showClusterDashboardAfterAnalysis,
+    setShowClusterDashboardAfterAnalysis,
+    wow,
+    setWow,
+    selectedCluster,
+    setSelectedCluster,
+    showGlow,
+    setShowGlow,
   };
 
   return (

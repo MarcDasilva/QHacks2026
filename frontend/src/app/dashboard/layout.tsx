@@ -17,7 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { ChatMessageView } from "@/components/chat-message-view";
 import { useAudioRecorder } from "@/hooks/use-audio-recorder";
 import { useBackendChat } from "@/hooks/use-backend-chat";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
@@ -27,6 +26,7 @@ import { ArrowRight, Loader2, Mic, Volume, VolumeX } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import TextType from "@/components/TextType.jsx";
 import { useVoice } from "@/contexts/voice-context";
 
 function mapSupabaseUser(user: User): {
@@ -116,12 +116,8 @@ export default function DashboardLayout({
         } as React.CSSProperties
       }
     >
-      <DashboardProvider>
-        <DashboardLayoutContent
-          user={sidebarUser}
-          onLogout={handleLogout}
-          showGlow={showGlow}
-        >
+      <DashboardProvider showGlow={showGlow} setShowGlow={setShowGlow}>
+        <DashboardLayoutContent user={sidebarUser} onLogout={handleLogout}>
           {children}
         </DashboardLayoutContent>
       </DashboardProvider>
@@ -132,19 +128,25 @@ export default function DashboardLayout({
 function DashboardLayoutContent({
   user,
   onLogout,
-  showGlow,
   children,
 }: {
   user: { name: string; email: string; avatar: string };
   onLogout: () => void;
-  showGlow: boolean;
   children: React.ReactNode;
 }) {
-  const { expansionPhase, selectedDatabase, ready } = useDashboard();
+  const {
+    expansionPhase,
+    selectedDatabase,
+    ready,
+    showClusterDashboardAfterAnalysis,
+    wow,
+    showGlow,
+  } = useDashboard();
+  const { isSpeaking } = useVoice();
   const isExpandingOrHolding =
     expansionPhase === "expanding" || expansionPhase === "holding";
   const isCrmSelected = selectedDatabase === CRM_DATABASE_VALUE;
-  const boohooFullWidth = isCrmSelected;
+  const boohooFullWidth = isCrmSelected && !showClusterDashboardAfterAnalysis;
 
   return (
     <>
@@ -156,12 +158,18 @@ function DashboardLayoutContent({
             <div
               className={`flex min-h-0 flex-1 gap-4 overflow-hidden px-4 py-4 md:px-6 md:py-6 ${boohooFullWidth ? "justify-end" : ""}`}
             >
-              {!boohooFullWidth && (
-                <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl">
-                  <div className="min-h-0 flex-1 overflow-auto">{children}</div>
-                  <GlowEffect active={showGlow} />
+              <div
+                className={`relative flex flex-col overflow-hidden rounded-xl transition-[flex-basis,min-width] duration-[1.8s] ease-out ${
+                  boohooFullWidth
+                    ? "w-0 min-w-0 shrink-0 basis-0 overflow-hidden"
+                    : "min-h-0 min-w-0 flex-1 shrink"
+                }`}
+              >
+                <div className="min-h-0 min-w-0 flex-1 overflow-auto">
+                  {children}
                 </div>
-              )}
+                <GlowEffect active={showGlow} />
+              </div>
               <div
                 className={`relative flex h-full max-h-full shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-zinc-200 dark:bg-zinc-800 transition-[flex-basis] duration-[1.8s] ease-out ${
                   boohooFullWidth
@@ -171,8 +179,12 @@ function DashboardLayoutContent({
                       : "basis-80 md:basis-96"
                 }`}
               >
-                <BoohooRive glowActive={showGlow} />
-                {boohooFullWidth && ready && <CrmReadyOverlay />}
+                <BoohooRive
+                  glowActive={showGlow}
+                  talking={isSpeaking}
+                  wow={wow}
+                />
+                {isCrmSelected && ready && <CrmReadyOverlay />}
               </div>
             </div>
           </div>
@@ -196,6 +208,7 @@ const ML_MODELS = [
 function CrmReadyOverlay() {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollBottomRef = useRef<HTMLDivElement>(null);
   const lastSpokenMessageRef = useRef<string>("");
   const [model, setModel] = useState<string>(ML_MODELS[0].value);
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
@@ -208,13 +221,111 @@ function CrmReadyOverlay() {
     pendingMessage,
     handleSubmit,
     handleConfirmation,
+    addMessage,
     backendHealthy,
     checkHealth,
-  } = useBackendChat(router);
+  } = useBackendChat(router, {
+    onClusterPrediction: (parentClusterId) => {
+      setSelectedCluster({ level: 1, cluster_id: parentClusterId });
+    },
+    onGlowOn: () => {
+      glowOnAfterTTSRef.current = true;
+    },
+  });
 
+  const {
+    setShowClusterDashboardAfterAnalysis,
+    setWow,
+    setSelectedCluster,
+    setShowGlow,
+  } = useDashboard();
   const voiceContext = useVoice();
+  const pendingAnalysisShiftRef = useRef(false);
+  const prevLoadingRef = useRef(isLoading);
+  const waitingForSttRef = useRef(false);
+  const pendingSubmitAfterSttRef = useRef(false);
+  const pendingSubmitTranscriptRef = useRef<string | null>(null);
+  const followUpMessageTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const glowOnAfterTTSRef = useRef(false);
+
+  const CLUSTER_FOLLOW_UP_MESSAGE =
+    "I searched the CRM and generated a vector database from its results, what are you interested in?";
+
+  const handleSubmitWithAnalysis = (e: React.FormEvent) => {
+    if (input.trim().toLowerCase().includes("analysis")) {
+      pendingAnalysisShiftRef.current = true;
+    }
+    handleSubmit(e);
+  };
+
+  useEffect(() => {
+    if (
+      pendingSubmitTranscriptRef.current !== null &&
+      input === pendingSubmitTranscriptRef.current
+    ) {
+      const transcript = pendingSubmitTranscriptRef.current;
+      pendingSubmitTranscriptRef.current = null;
+      handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+    }
+  }, [input, handleSubmit]);
+
   const { isRecording, startRecording, stopRecording } = useAudioRecorder();
-  const { speak, stop: stopSpeaking, isSpeaking, isSupported: isTTSSupported } = useTextToSpeech();
+  const {
+    speak,
+    speakWithSubtitles,
+    stop: stopSpeaking,
+    isSpeaking,
+    isSupported: isTTSSupported,
+  } = useTextToSpeech();
+
+  useEffect(() => {
+    const wasLoading = prevLoadingRef.current;
+    prevLoadingRef.current = isLoading;
+    if (wasLoading && !isLoading && pendingAnalysisShiftRef.current) {
+      const last = messages[messages.length - 1];
+      const willSpeak =
+        isTTSEnabled &&
+        isTTSSupported &&
+        last &&
+        (last.type === "answer" || last.type === "chat");
+      if (willSpeak) {
+        return;
+      }
+      pendingAnalysisShiftRef.current = false;
+      const t = setTimeout(() => {
+        setShowClusterDashboardAfterAnalysis(true);
+        setTimeout(() => {
+          setWow(true);
+          setTimeout(() => setWow(false), 1000);
+          if (followUpMessageTimeoutRef.current)
+            clearTimeout(followUpMessageTimeoutRef.current);
+          followUpMessageTimeoutRef.current = setTimeout(() => {
+            addMessage({
+              type: "chat",
+              content: CLUSTER_FOLLOW_UP_MESSAGE,
+            });
+            followUpMessageTimeoutRef.current = null;
+          }, 2000);
+        }, 1000);
+      }, 1000);
+      return () => clearTimeout(t);
+    }
+  }, [
+    isLoading,
+    messages,
+    isTTSEnabled,
+    isTTSSupported,
+    setShowClusterDashboardAfterAnalysis,
+    setWow,
+    addMessage,
+  ]);
+
+  const [subtitleMessageId, setSubtitleMessageId] = useState<string | null>(
+    null,
+  );
+  const [subtitleVisibleText, setSubtitleVisibleText] = useState("");
 
   useEffect(() => {
     voiceContext.setIsSpeaking(isSpeaking);
@@ -231,10 +342,18 @@ function CrmReadyOverlay() {
   }, [checkHealth]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+    return () => {
+      if (followUpMessageTimeoutRef.current)
+        clearTimeout(followUpMessageTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    scrollBottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [messages, subtitleVisibleText, isLoading]);
 
   useEffect(() => {
     if (!isTTSEnabled || !isTTSSupported) return;
@@ -242,16 +361,67 @@ function CrmReadyOverlay() {
     if (!last || (last.type !== "answer" && last.type !== "chat")) return;
     if (last.content === lastSpokenMessageRef.current) return;
     lastSpokenMessageRef.current = last.content;
-    speak(last.content);
-  }, [messages, isTTSEnabled, isTTSSupported, speak]);
+    setSubtitleMessageId(last.id);
+    setSubtitleVisibleText("");
+    speakWithSubtitles(last.content, {
+      onSubtitle: setSubtitleVisibleText,
+      onEnd: () => {
+        setSubtitleMessageId(null);
+        setSubtitleVisibleText("");
+        if (glowOnAfterTTSRef.current) {
+          glowOnAfterTTSRef.current = false;
+          setShowGlow(true);
+        }
+        if (pendingAnalysisShiftRef.current) {
+          pendingAnalysisShiftRef.current = false;
+          setTimeout(() => {
+            setShowClusterDashboardAfterAnalysis(true);
+            setTimeout(() => {
+              setWow(true);
+              setTimeout(() => setWow(false), 1000);
+              if (followUpMessageTimeoutRef.current)
+                clearTimeout(followUpMessageTimeoutRef.current);
+              followUpMessageTimeoutRef.current = setTimeout(() => {
+                addMessage({
+                  type: "chat",
+                  content: CLUSTER_FOLLOW_UP_MESSAGE,
+                });
+                followUpMessageTimeoutRef.current = null;
+              }, 2000);
+            }, 1000);
+          }, 1000);
+        }
+      },
+    });
+  }, [
+    messages,
+    isTTSEnabled,
+    isTTSSupported,
+    speakWithSubtitles,
+    setShowClusterDashboardAfterAnalysis,
+    setWow,
+    setShowGlow,
+    addMessage,
+  ]);
 
   const handleMicClick = async () => {
     if (isRecording) {
       voiceContext.setIsProcessing(true);
+      waitingForSttRef.current = true;
       await stopRecording();
       voiceContext.setIsProcessing(false);
     } else {
-      await startRecording((transcript) => setInput(transcript));
+      await startRecording((transcript) => {
+        setInput(transcript);
+        waitingForSttRef.current = false;
+        if (pendingSubmitAfterSttRef.current) {
+          pendingSubmitAfterSttRef.current = false;
+          if (transcript.trim().toLowerCase().includes("analysis")) {
+            pendingAnalysisShiftRef.current = true;
+          }
+          pendingSubmitTranscriptRef.current = transcript;
+        }
+      });
     }
   };
 
@@ -260,40 +430,120 @@ function CrmReadyOverlay() {
     setIsTTSEnabled((v) => !v);
   };
 
+  const lastUserMessage =
+    [...messages].reverse().find((m) => m.type === "user")?.content ?? "";
+  const responseMessages = messages.filter((m) =>
+    [
+      "answer",
+      "chat",
+      "thought",
+      "plan",
+      "navigation",
+      "confirmation",
+      "error",
+    ].includes(m.type),
+  );
+  const lastResponse = responseMessages[responseMessages.length - 1];
+  const showConfirmation = lastResponse?.type === "confirmation";
+  const showThinkingSpinner =
+    (isLoading && pendingMessage === null) ||
+    (subtitleMessageId !== null && subtitleVisibleText === "");
+  const previousMessagesText =
+    responseMessages.length <= 1
+      ? ""
+      : responseMessages
+          .slice(0, -1)
+          .map((m) => m.content)
+          .filter(Boolean)
+          .join("\n\n");
+  const useTextTypeForLast =
+    lastResponse &&
+    (lastResponse.type === "answer" || lastResponse.type === "chat") &&
+    subtitleMessageId === lastResponse.id;
+  const lastPartPlain = !useTextTypeForLast
+    ? (lastResponse?.content ?? "")
+    : "";
+
   return (
     <div
-      className="absolute inset-0 z-10 flex flex-col gap-4 px-6 pb-6 pt-4 md:px-8 md:pb-8 md:pt-4 animate-in fade-in-0 duration-700"
+      className="absolute inset-0 z-10 flex flex-col px-6 pb-6 pt-4 md:px-8 md:pb-8 md:pt-4 animate-in fade-in-0 duration-700"
       style={{ fontFamily: "Zodiak, sans-serif" }}
     >
-      {/* Notes placeholder (static) */}
-      <div className="flex shrink-0 justify-center">
-        <div className="flex w-full max-w-md min-h-24 flex-col justify-center rounded-lg bg-zinc-400/60 dark:bg-zinc-600/60 px-4 py-3 text-sm text-zinc-700 dark:text-zinc-300">
-          <p className="text-balance">Notes or context appear here.</p>
-        </div>
-      </div>
-
-      {/* Conversation history */}
-      <ScrollArea className="flex min-h-0 flex-1">
-        <div ref={scrollRef} className="space-y-1 pr-2">
-          {messages.length === 0 && (
-            <div className="flex items-center justify-center py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
-              <p>Ask a question or click the mic to speak. Use &quot;analysis&quot; for deep analysis.</p>
-            </div>
-          )}
-          {messages.map((msg) => (
-            <ChatMessageView
-              key={msg.id}
-              message={msg}
-              onConfirmation={handleConfirmation}
-              isLoading={isLoading}
+      <div className="flex flex-col items-center max-w-md w-full mx-auto mt-auto gap-0">
+        {/* Single grey box: fixed height, scrollable text (same kind of dimensions as input) */}
+        <ScrollArea className="h-24 w-full rounded-t-lg border border-b-0 border-border bg-zinc-200/80 dark:bg-zinc-700/50">
+          <div
+            ref={scrollRef}
+            className="p-3 text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap"
+          >
+            {responseMessages.length === 0 && !isLoading && (
+              <span className="text-zinc-500 dark:text-zinc-400">
+                Ask a question or click the mic
+              </span>
+            )}
+            {previousMessagesText ? previousMessagesText : null}
+            {previousMessagesText && (lastPartPlain || useTextTypeForLast)
+              ? "\n\n"
+              : null}
+            {showThinkingSpinner && (
+              <div className="mt-2 flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                <Loader2 className="size-4 animate-spin shrink-0" />
+                <span>Thinking…</span>
+              </div>
+            )}
+            {!showThinkingSpinner && useTextTypeForLast && lastResponse && (
+              <TextType
+                key={lastResponse.id}
+                text={lastResponse.content}
+                loop={false}
+                typingSpeed={40}
+                showCursor={true}
+                className="text-zinc-700 dark:text-zinc-300"
+                variableSpeed={undefined}
+                onSentenceComplete={undefined}
+              />
+            )}
+            {!showThinkingSpinner && lastPartPlain ? lastPartPlain : null}
+            <div
+              ref={scrollBottomRef}
+              aria-hidden
+              className="h-0 w-full shrink-0"
             />
-          ))}
-        </div>
-      </ScrollArea>
+            {showConfirmation && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => handleConfirmation(true)}
+                  disabled={isLoading}
+                  className="text-xs px-2 py-1 rounded bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50"
+                >
+                  Yes, Deep Analysis
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleConfirmation(false)}
+                  disabled={isLoading}
+                  className="text-xs px-2 py-1 rounded border border-border hover:bg-zinc-200 dark:hover:bg-zinc-600 disabled:opacity-50"
+                >
+                  No, Simple Chat
+                </button>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
 
-      {/* Input + mic + send + model + voice */}
-      <div className="flex shrink-0 justify-center">
-        <div className="flex w-full max-w-md flex-col gap-3 rounded-lg border border-border bg-white dark:bg-zinc-100 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-900 shadow-sm min-h-24">
+        {/* One-line strip: last message sent (truncated) */}
+        {lastUserMessage ? (
+          <div
+            className="w-full px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800/80 border-x border-border text-sm text-zinc-600 dark:text-zinc-300 truncate"
+            title={lastUserMessage}
+          >
+            {lastUserMessage}
+          </div>
+        ) : null}
+
+        {/* Input + mic + send + model + voice */}
+        <div className="flex shrink-0 w-full flex-col gap-3 rounded-b-lg border border-border bg-white dark:bg-zinc-100 px-4 py-3 text-sm text-zinc-800 dark:text-zinc-900 shadow-sm">
           {backendHealthy === false && (
             <p className="text-xs text-amber-600 dark:text-amber-400">
               Backend unavailable. Start the server on port 8000.
@@ -305,7 +555,7 @@ function CrmReadyOverlay() {
                 type="button"
                 onClick={toggleTTS}
                 className="flex items-center gap-1 rounded px-2 py-1 text-xs hover:bg-zinc-200 dark:hover:bg-zinc-600"
-                title={isTTSEnabled ? "Voice On" : "Voice Off"}
+                title={isTTSEnabled ? "Click to mute" : "Voice off"}
               >
                 {isTTSEnabled ? (
                   <Volume className="size-3.5" />
@@ -322,7 +572,10 @@ function CrmReadyOverlay() {
               )}
             </span>
           </div>
-          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <form
+            onSubmit={handleSubmitWithAnalysis}
+            className="flex items-center gap-2"
+          >
             <input
               type="text"
               value={input}
@@ -341,7 +594,9 @@ function CrmReadyOverlay() {
                   ? "bg-red-600 text-white"
                   : "bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-500"
               } ${isRecording ? "animate-pulse" : ""}`}
-              aria-label={isRecording ? "Stop recording" : "Activate microphone"}
+              aria-label={
+                isRecording ? "Stop recording" : "Activate microphone"
+              }
             >
               <Mic className="size-4" />
             </button>
@@ -369,7 +624,11 @@ function CrmReadyOverlay() {
               {ML_MODELS.map((m) => (
                 <SelectItem key={m.value} value={m.value}>
                   <span className="flex items-center gap-2">
-                    <img src={m.icon} alt="" className="size-3.5 shrink-0 object-contain" />
+                    <img
+                      src={m.icon}
+                      alt=""
+                      className="size-3.5 shrink-0 object-contain"
+                    />
                     {m.label}
                   </span>
                 </SelectItem>

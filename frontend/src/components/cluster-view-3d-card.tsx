@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,6 +12,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
+import type { SelectedCluster } from "@/types/clusters";
+
+const PLOT_MIN_HEIGHT = 320;
 
 const Plot = dynamic(
   () => import("react-plotly.js").then((mod) => mod.default),
@@ -46,11 +50,19 @@ type ClusterRow = {
   size: number;
 };
 
-export function ClusterView3DCard() {
+export function ClusterView3DCard({
+  selectedCluster,
+  onSelectCluster,
+}: {
+  selectedCluster: SelectedCluster;
+  onSelectCluster: (cluster: SelectedCluster) => void;
+}) {
   const [points, setPoints] = useState<Request3DRow[]>([]);
   const [clusters, setClusters] = useState<ClusterRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const plotContainerRef = useRef<HTMLDivElement>(null);
+  const [plotHeight, setPlotHeight] = useState(PLOT_MIN_HEIGHT);
 
   useEffect(() => {
     const supabase = createClient();
@@ -97,14 +109,39 @@ export function ClusterView3DCard() {
     load();
   }, []);
 
+  useEffect(() => {
+    const el = plotContainerRef.current;
+    if (!el) return;
+    const updateHeight = () => {
+      const { height } = el.getBoundingClientRect();
+      if (height > 0)
+        setPlotHeight((prev) => Math.max(PLOT_MIN_HEIGHT, Math.round(height)));
+    };
+    const ro = new ResizeObserver(updateHeight);
+    ro.observe(el);
+    updateHeight();
+    const t1 = setTimeout(updateHeight, 100);
+    const t2 = setTimeout(updateHeight, 600);
+    const t3 = setTimeout(updateHeight, 1200);
+    return () => {
+      ro.disconnect();
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [loading, error, points.length]);
+
   const { data, layout } = useMemo(() => {
     const byCluster = new Map<
       number,
       { x: number[]; y: number[]; z: number[] }
     >();
+    const filterClusterId =
+      selectedCluster != null ? selectedCluster.cluster_id : null;
     for (const p of points) {
       const cid = p.top_cluster_id;
       if (cid == null || p.z_2d == null) continue;
+      if (filterClusterId != null && cid !== filterClusterId) continue;
       if (!byCluster.has(cid)) byCluster.set(cid, { x: [], y: [], z: [] });
       const t = byCluster.get(cid)!;
       t.x.push(p.x_2d);
@@ -140,11 +177,11 @@ export function ClusterView3DCard() {
       paper_bgcolor: "transparent",
       plot_bgcolor: "transparent",
       font: { size: 11 },
-      height: 420,
+      height: plotHeight,
       autosize: true,
     };
     return { data, layout };
-  }, [points]);
+  }, [points, plotHeight, selectedCluster]);
 
   if (loading) {
     return (
@@ -198,24 +235,42 @@ export function ClusterView3DCard() {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <CardHeader className="shrink-0">
         <CardTitle>Cluster view (3D)</CardTitle>
         <CardDescription>
-          All 25 level-1 clusters in 3D UMAP space. Each dot is one request. Up
-          to {MAX_POINTS.toLocaleString()} points.
+          {selectedCluster != null
+            ? `Showing Cluster ${selectedCluster.cluster_id} only.`
+            : `All 25 level-1 clusters in 3D UMAP space. Each dot is one request. Up to ${MAX_POINTS.toLocaleString()} points.`}
         </CardDescription>
+        {selectedCluster != null && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="mt-2 w-fit"
+            onClick={() => onSelectCluster(null)}
+          >
+            Show all clusters
+          </Button>
+        )}
       </CardHeader>
-      <CardContent>
-        <Plot
-          data={data}
-          layout={layout}
-          config={{ responsive: true, displayModeBar: false }}
-          style={{ width: "100%" }}
-          useResizeHandler
-        />
+      <CardContent className="flex min-h-0 flex-1 flex-col px-6">
+        <div
+          ref={plotContainerRef}
+          className="min-h-0 w-full flex-1"
+          style={{ minHeight: PLOT_MIN_HEIGHT }}
+        >
+          <Plot
+            data={data}
+            layout={layout}
+            config={{ responsive: true, displayModeBar: false }}
+            style={{ width: "100%", height: "100%" }}
+            useResizeHandler
+          />
+        </div>
       </CardContent>
-      <CardFooter className="text-sm text-muted-foreground">
+      <CardFooter className="shrink-0 text-sm text-muted-foreground">
         Drag to rotate, scroll to zoom
       </CardFooter>
     </Card>

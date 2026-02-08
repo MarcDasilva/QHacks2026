@@ -18,9 +18,17 @@ const EYE_PERIOD_MS = 1200;
 type BoohooRiveProps = {
   /** When true, eyes move up/down instead of following cursor (glow highlight mode). */
   glowActive?: boolean;
+  /** When true, Rive input "talking" is set to true (e.g. TTS playing); false when done. */
+  talking?: boolean;
+  /** When true, Rive boolean input "wow" is true (e.g. cluster charts opening); false after 1s. */
+  wow?: boolean;
 };
 
-export function BoohooRive({ glowActive = false }: BoohooRiveProps) {
+export function BoohooRive({
+  glowActive = false,
+  talking = false,
+  wow = false,
+}: BoohooRiveProps) {
   const { rive, RiveComponent } = useRive({
     src: "/boohooplusglow.riv",
     stateMachines: STATE_MACHINE_NAME,
@@ -43,6 +51,7 @@ export function BoohooRive({ glowActive = false }: BoohooRiveProps) {
     "thinking",
     false,
   );
+  const wowInput = useStateMachineInput(rive, STATE_MACHINE_NAME, "wow", false);
   const characterXInput = useStateMachineInput(
     rive,
     STATE_MACHINE_NAME,
@@ -56,6 +65,14 @@ export function BoohooRive({ glowActive = false }: BoohooRiveProps) {
     EYE_CENTER,
   );
   const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (talkingInput) talkingInput.value = talking;
+  }, [talking, talkingInput]);
+
+  useEffect(() => {
+    if (wowInput) wowInput.value = wow;
+  }, [wow, wowInput]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

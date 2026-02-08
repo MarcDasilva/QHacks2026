@@ -13,8 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { SelectedCluster } from "@/types/clusters";
-import { useState } from "react";
 
 const DATABASE_OPTIONS = [
   { value: "analytics", label: "Analytics Warehouse" },
@@ -25,12 +23,20 @@ const DATABASE_OPTIONS = [
 ];
 
 export default function DashboardPage() {
-  const { selectedDatabase, setSelectedDatabase, showClusterView } =
-    useDashboard();
-  const [selectedCluster, setSelectedCluster] = useState<SelectedCluster>(null);
+  const {
+    selectedDatabase,
+    setSelectedDatabase,
+    showClusterView,
+    selectedCluster,
+    setSelectedCluster,
+  } = useDashboard();
 
   return (
-    <div className="min-h-0 w-full min-w-0 flex-1 space-y-6 overflow-auto py-2">
+    <div
+      className={`min-h-0 w-full min-w-0 flex-1 overflow-auto py-2 ${
+        showClusterView ? "flex flex-col gap-6" : "space-y-6"
+      }`}
+    >
       {!showClusterView ? (
         <div className="flex min-h-[50vh] flex-col items-center justify-center gap-6 px-4">
           <header className="flex flex-col items-center text-center">
@@ -77,11 +83,18 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <ClusterView3DCard />
-          <ClusterListCard
-            selectedCluster={selectedCluster}
-            onSelectCluster={setSelectedCluster}
-          />
+          <div className="min-h-0 min-w-0 flex-1">
+            <ClusterView3DCard
+              selectedCluster={selectedCluster}
+              onSelectCluster={setSelectedCluster}
+            />
+          </div>
+          <div className="shrink-0">
+            <ClusterListCard
+              selectedCluster={selectedCluster}
+              onSelectCluster={setSelectedCluster}
+            />
+          </div>
         </>
       )}
     </div>

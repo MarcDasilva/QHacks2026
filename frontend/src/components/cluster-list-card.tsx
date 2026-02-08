@@ -15,12 +15,13 @@ import { cn } from "@/lib/utils";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import * as Collapsible from "@radix-ui/react-collapsible";
 
-/** Matches clusters table: cluster_id, parent_cluster_id (null for level 1), level, size. Each level-2 cluster has exactly one parent (level-1). */
+/** Matches clusters table: cluster_id, parent_cluster_id (null for level 1), level, size, label. Each level-2 cluster has exactly one parent (level-1). */
 type ClusterRow = {
   cluster_id: number;
   parent_cluster_id: number | null;
   level: number;
   size: number;
+  label: string | null;
 };
 
 export function ClusterListCard({
@@ -44,7 +45,7 @@ export function ClusterListCard({
       try {
         const l1Res = await supabase
           .from("clusters")
-          .select("cluster_id, parent_cluster_id, level, size")
+          .select("cluster_id, parent_cluster_id, level, size, label")
           .eq("level", 1)
           .order("size", { ascending: false });
 
@@ -53,7 +54,7 @@ export function ClusterListCard({
 
         const l2Res = await supabase
           .from("clusters")
-          .select("cluster_id, parent_cluster_id, level, size")
+          .select("cluster_id, parent_cluster_id, level, size, label")
           .eq("level", 2)
           .order("size", { ascending: false });
 
@@ -175,6 +176,11 @@ export function ClusterListCard({
                     </span>
                     <span className="min-w-0 flex-1 font-medium">
                       Level 1, Cluster {row.cluster_id}
+                      {row.label != null && row.label.trim() !== "" && (
+                        <span className="ml-1.5 font-normal text-muted-foreground/80">
+                          {row.label}
+                        </span>
+                      )}
                     </span>
                     <span className="shrink-0 text-muted-foreground">
                       {row.size.toLocaleString()} requests
@@ -207,7 +213,14 @@ export function ClusterListCard({
                           >
                             {subRankIndex + 1}
                           </span>
-                          <span>Level 2, Cluster {sub.cluster_id}</span>
+                          <span>
+                            Level 2, Cluster {sub.cluster_id}
+                            {sub.label != null && sub.label.trim() !== "" && (
+                              <span className="ml-1.5 text-muted-foreground/80">
+                                {sub.label}
+                              </span>
+                            )}
+                          </span>
                           <span className="text-muted-foreground/80">
                             {sub.size.toLocaleString()} requests
                           </span>
