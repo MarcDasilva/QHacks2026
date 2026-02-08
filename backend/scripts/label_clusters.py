@@ -169,11 +169,11 @@ def generate_labels_batch_with_gemini(cluster_data_list, model="gemini-2.5-flash
     Generate labels for multiple clusters in a single batch request to save credits.
     
     Args:
-        cluster_data_list: List of tuples (service_types, descriptions, cluster_id)
-        model: Gemini model to use (gemini-1.5-flash-latest is cheaper than gemini-1.5-pro)
+        cluster_data_list: List of tuples (service_types, descriptions, parent_id, cluster_id)
+        model: Gemini model to use (gemini-2.5-flash)
     
     Returns:
-        dict: Mapping of cluster_id -> label
+        dict: Mapping of (parent_id, cluster_id) -> label
     """
     # Try new package first, fall back to old package
     try:
@@ -200,11 +200,11 @@ def generate_labels_batch_with_gemini(cluster_data_list, model="gemini-2.5-flash
         client_old = genai_old
     
     # Prepare batch prompt with all clusters in a clear format
-    # Keep track of cluster IDs in order
+    # Keep track of cluster keys in order (parent_id, cluster_id)
     cluster_entries = []
-    cluster_id_order = []  # Track the order of cluster IDs
+    cluster_key_order = []  # Track the order of cluster keys (parent_id, cluster_id)
     
-    for service_types, descriptions, cluster_id in cluster_data_list:
+    for service_types, descriptions, parent_id, cluster_id in cluster_data_list:
         if not service_types:
             # Empty cluster - skip from LLM request, will be labeled as "EMPTY"
             continue
@@ -213,9 +213,11 @@ def generate_labels_batch_with_gemini(cluster_data_list, model="gemini-2.5-flash
         top_types = service_type_counter.most_common(3)
         top_types_str = ", ".join([f"{name} ({count})" for name, count in top_types])
         
-        # Format: Cluster ID and service types
-        cluster_entries.append(f"{cluster_id}|{top_types_str}")
-        cluster_id_order.append(cluster_id)  # Track order
+        # Format: Cluster identifier (parent.cluster) and service types
+        cluster_key = (parent_id, cluster_id)
+        cluster_identifier = f"{parent_id}.{cluster_id}" if parent_id is not None else f"top.{cluster_id}"
+        cluster_entries.append(f"{cluster_identifier}|{top_types_str}")
+        cluster_key_order.append(cluster_key)  # Track order with unique key
     
     if not cluster_entries:
         # All clusters are empty
@@ -286,22 +288,30 @@ Format: {{(label1) (label2) (label3) ...}}"""
         labels_found = re.findall(r'\(([^)]+)\)', result_text)
         
         # Debug: check what we have
-        print(f"[DEBUG] cluster_id_order length: {len(cluster_id_order)}")
+        print(f"[DEBUG] cluster_key_order length: {len(cluster_key_order)}")
         print(f"[DEBUG] labels_found length: {len(labels_found)}")
         
-        # Match labels to cluster IDs by position (cluster_id_order matches the order in prompt)
-        # Use ALL found labels, matching to cluster IDs in order
-        num_to_match = min(len(labels_found), len(cluster_id_order))
+        # Match labels to cluster keys by position (cluster_key_order matches the order in prompt)
+        # Use ALL found labels, matching to cluster keys (parent_id, cluster_id) in order
+        num_to_match = min(len(labels_found), len(cluster_key_order))
+        skipped_labels = 0
         for i in range(num_to_match):
-            cluster_id = cluster_id_order[i]
+            cluster_key = cluster_key_order[i]
             label = labels_found[i].strip()
             if label and label.lower() not in ['empty', 'n/a', 'none', '']:
-                labels_dict[cluster_id] = label
+                labels_dict[cluster_key] = label
+            else:
+                skipped_labels += 1
+                print(f"[DEBUG] Skipped label at position {i}: '{label}' (empty or invalid)")
         
         # Debug: show parsing results
         print(f"[DEBUG] Successfully assigned {len(labels_dict)} labels to clusters")
-        if len(labels_found) < len(cluster_id_order):
-            print(f"[WARN] Response incomplete - got {len(labels_found)}/{len(cluster_id_order)} labels (response may be truncated)")
+        if skipped_labels > 0:
+            print(f"[DEBUG] Skipped {skipped_labels} invalid/empty labels")
+        if len(labels_found) < len(cluster_key_order):
+            print(f"[WARN] Response incomplete - got {len(labels_found)}/{len(cluster_key_order)} labels (response may be truncated)")
+        elif len(labels_found) > len(cluster_key_order):
+            print(f"[WARN] Got more labels ({len(labels_found)}) than clusters ({len(cluster_key_order)}) - extra labels ignored")
         
         return labels_dict
     
@@ -802,9 +812,9 @@ def main():
                     
                     print(f"[INFO] Processing LLM batch {batch_num}/{total_batches} ({len(batch)} clusters)...")
                     
-                    # Prepare batch data for LLM
+                    # Prepare batch data for LLM (include parent_id for unique identification)
                     batch_data = [
-                        (info['service_types'], info['descriptions'], info['cluster_id'])
+                        (info['service_types'], info['descriptions'], info['parent_id'], info['cluster_id'])
                         for info in batch
                     ]
                     
@@ -819,10 +829,12 @@ def main():
                     # Process results
                     for info in batch:
                         cluster_id = info['cluster_id']
+                        parent_id = info['parent_id']
+                        cluster_key = (parent_id, cluster_id)
                         
-                        # Use LLM label if available
-                        if cluster_id in llm_labels:
-                            label = llm_labels[cluster_id]
+                        # Use LLM label if available (lookup by unique key)
+                        if cluster_key in llm_labels:
+                            label = llm_labels[cluster_key]
                             # Clean up label - remove trailing connectors
                             connecting_words = ['and', 'or', '/', '-', '&']
                             label_words = label.split()

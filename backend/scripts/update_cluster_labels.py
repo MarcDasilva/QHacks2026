@@ -23,7 +23,7 @@ load_dotenv()
 from app.db.connection import get_conn
 
 
-def update_cluster_labels(conn, csv_path, dry_run=False):
+def update_cluster_labels(conn, csv_path, dry_run=False, verbose=False):
     """
     Update cluster labels from CSV file.
     
@@ -58,9 +58,10 @@ def update_cluster_labels(conn, csv_path, dry_run=False):
             })
     
     print(f"[INFO] Found {len(labels_data)} clusters to update ({skipped_empty} EMPTY rows skipped)")
+    print(f"[INFO] Note: This will OVERWRITE existing labels in the database")
     
     if dry_run:
-        print("\n[DRY RUN] Would update the following labels:")
+        print("\n[DRY RUN] Would OVERWRITE the following labels:")
         print("-" * 80)
     
     updated_count = 0
@@ -92,11 +93,27 @@ def update_cluster_labels(conn, csv_path, dry_run=False):
         if cluster:
             cluster_db_id, db_cluster_id, db_parent_id, db_level, current_label = cluster
             
-            if dry_run:
-                print(f"Cluster ID: {cluster_id}, Parent: {parent_id or 'NULL'}, "
-                      f"Current Label: {current_label or '(empty)'}, "
-                      f"New Label: {label}")
-            else:
+            # Verify the match is correct
+            if verbose or dry_run:
+                match_info = f"✓ Match found - will OVERWRITE existing label"
+                if verbose:
+                    print(f"\n{match_info}")
+                    print(f"  CSV:  cluster_id={cluster_id}, parent_id={parent_id}, level={label_info['level']}, label='{label}'")
+                    print(f"  DB:   cluster_id={db_cluster_id}, parent_id={db_parent_id}, level={db_level}, current_label='{current_label or '(empty)'}'")
+                    if current_label and current_label != label:
+                        print(f"  → OVERWRITING: '{current_label}' → '{label}'")
+                    else:
+                        print(f"  → Setting label: '{label}'")
+                else:
+                    if current_label and current_label != label:
+                        print(f"Cluster ID: {cluster_id}, Parent: {parent_id or 'NULL'}, "
+                              f"OVERWRITING: '{current_label}' → '{label}'")
+                    else:
+                        print(f"Cluster ID: {cluster_id}, Parent: {parent_id or 'NULL'}, "
+                              f"Current Label: {current_label or '(empty)'}, "
+                              f"New Label: {label}")
+            
+            if not dry_run:
                 # Update the label
                 cursor.execute("""
                     UPDATE clusters
@@ -105,8 +122,10 @@ def update_cluster_labels(conn, csv_path, dry_run=False):
                 """, (label, cluster_db_id))
                 updated_count += 1
         else:
-            if dry_run:
-                print(f"[WARNING] Cluster not found - ID: {cluster_id}, Parent: {parent_id or 'NULL'}")
+            if verbose or dry_run:
+                print(f"\n✗ Cluster NOT found in database")
+                print(f"  CSV:  cluster_id={cluster_id}, parent_id={parent_id}, level={label_info['level']}, label='{label}'")
+                print(f"  → No matching cluster in DB with these criteria")
             not_found_count += 1
     
     if not dry_run:
@@ -114,9 +133,19 @@ def update_cluster_labels(conn, csv_path, dry_run=False):
         print(f"\n[SUCCESS] Updated {updated_count} cluster labels")
         if not_found_count > 0:
             print(f"[WARNING] {not_found_count} clusters from CSV were not found in database")
+        
+        # Verification summary
+        print(f"\n[VERIFICATION] Matching summary:")
+        print(f"  - Successfully matched and updated: {updated_count}")
+        print(f"  - Not found in database: {not_found_count}")
+        print(f"  - Matching uses: cluster_id + parent_cluster_id + level (ensures correct mapping)")
     else:
         print(f"\n[DRY RUN] Would update {len(labels_data) - not_found_count} clusters")
         print(f"[DRY RUN] {not_found_count} clusters from CSV were not found in database")
+        print(f"\n[VERIFICATION] Matching logic:")
+        print(f"  - Top-level clusters: WHERE cluster_id = X AND parent_cluster_id IS NULL AND level = 1")
+        print(f"  - Sub-clusters: WHERE cluster_id = X AND parent_cluster_id = Y AND level = 2")
+        print(f"  - This ensures each cluster is uniquely identified (prevents mis-mapping)")
     
     cursor.close()
 
@@ -134,6 +163,11 @@ def main():
         action='store_true',
         help='Preview changes without updating database'
     )
+    parser.add_argument(
+        '--verbose',
+        action='store_true',
+        help='Show detailed matching information'
+    )
     
     args = parser.parse_args()
     
@@ -149,7 +183,7 @@ def main():
         conn = get_conn()
         print("[INFO] Connected to database")
         
-        update_cluster_labels(conn, csv_path, dry_run=args.dry_run)
+        update_cluster_labels(conn, csv_path, dry_run=args.dry_run, verbose=args.verbose)
         
         conn.close()
         print("[INFO] Database connection closed")
