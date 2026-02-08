@@ -22,12 +22,15 @@ type BoohooRiveProps = {
   talking?: boolean;
   /** When true, Rive boolean input "wow" is true (e.g. cluster charts opening); false after 1s. */
   wow?: boolean;
+  /** When true, Rive boolean input "thinking" is true (e.g. report generation). */
+  thinking?: boolean;
 };
 
 export function BoohooRive({
   glowActive = false,
   talking = false,
   wow = false,
+  thinking = false,
 }: BoohooRiveProps) {
   const { rive, RiveComponent } = useRive({
     src: "/boohooplusglow.riv",
@@ -73,6 +76,10 @@ export function BoohooRive({
   useEffect(() => {
     if (wowInput) wowInput.value = wow;
   }, [wow, wowInput]);
+
+  useEffect(() => {
+    if (thinkingInput) thinkingInput.value = thinking;
+  }, [thinking, thinkingInput]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

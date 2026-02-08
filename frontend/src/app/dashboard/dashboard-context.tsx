@@ -28,12 +28,18 @@ type DashboardContextValue = {
   /** When true, Rive shows "wow" (set true when cluster charts open, false after 1s). */
   wow: boolean;
   setWow: (v: boolean) => void;
+  /** When true, Rive shows "thinking" (e.g. report generation in progress). */
+  thinking: boolean;
+  setThinking: (v: boolean) => void;
   /** Selected level-1 cluster for the 3D view (e.g. from cluster predictor follow-up). */
   selectedCluster: SelectedCluster;
   setSelectedCluster: (c: SelectedCluster) => void;
   /** Glow mode (e.g. turned on after user follow-up "deep research"). */
   showGlow: boolean;
   setShowGlow: (v: boolean) => void;
+  /** Blob URL of the generated report PDF to show on Reports page (null when none). */
+  reportPdfUrl: string | null;
+  setReportPdfUrl: (url: string | null) => void;
 };
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
@@ -61,8 +67,10 @@ export function DashboardProvider({
     setShowClusterDashboardAfterAnalysis,
   ] = useState(false);
   const [wow, setWow] = useState(false);
+  const [thinking, setThinking] = useState(false);
   const [selectedCluster, setSelectedCluster] = useState<SelectedCluster>(null);
   const [internalGlow, setInternalGlow] = useState(false);
+  const [reportPdfUrl, setReportPdfUrl] = useState<string | null>(null);
   const showGlow = setShowGlowProp != null ? showGlowProp : internalGlow;
   const setShowGlow =
     setShowGlowProp != null ? setShowGlowProp : setInternalGlow;
@@ -129,10 +137,14 @@ export function DashboardProvider({
     setShowClusterDashboardAfterAnalysis,
     wow,
     setWow,
+    thinking,
+    setThinking,
     selectedCluster,
     setSelectedCluster,
     showGlow,
     setShowGlow,
+    reportPdfUrl,
+    setReportPdfUrl,
   };
 
   return (

@@ -70,6 +70,11 @@ const data = {
       ],
     },
     {
+      title: "Reports",
+      url: "/dashboard/reports",
+      icon: IconReport,
+    },
+    {
       title: "Projects",
       url: "#",
       icon: IconFolder,
