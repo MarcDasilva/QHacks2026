@@ -44,6 +44,9 @@ export interface UseBackendChatReturn {
   checkHealth: () => Promise<void>;
 }
 
+/** Delay (ms) after turning glow on before navigating — glow must show first, then change page. */
+export const GLOW_BEFORE_NAV_MS = 1000;
+
 export interface UseBackendChatOptions {
   /** Called when the stream emits a cluster_prediction (parent + child cluster for user's follow-up). */
   onClusterPrediction?: (
@@ -52,13 +55,15 @@ export interface UseBackendChatOptions {
   ) => void;
   /** Called when the stream emits glow_on (turn glow mode on after follow-up). */
   onGlowOn?: () => void;
+  /** Called when navigation is requested. Layout must turn glow on, wait GLOW_BEFORE_NAV_MS, then navigate to url. If provided, the hook never calls router.push — layout owns the order. */
+  onBeforeNavigate?: (url: string) => void;
 }
 
 export function useBackendChat(
   router: AppRouterInstance,
   options: UseBackendChatOptions = {},
 ): UseBackendChatReturn {
-  const { onClusterPrediction, onGlowOn } = options;
+  const { onClusterPrediction, onGlowOn, onBeforeNavigate } = options;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -159,7 +164,13 @@ export function useBackendChat(
                   data: data.data,
                 });
                 if (data.data?.url) {
-                  setTimeout(() => handleNavigate(data.data!.url!), 500);
+                  const url = data.data.url;
+                  if (onBeforeNavigate) {
+                    // Layout owns glow-then-navigate: hook only notifies with url; layout turns glow on and navigates after delay
+                    onBeforeNavigate(url);
+                  } else {
+                    setTimeout(() => handleNavigate(url), 500);
+                  }
                 }
               } else if (data.type === "plan") {
                 addMessage({
@@ -208,7 +219,14 @@ export function useBackendChat(
         setIsLoading(false);
       }
     },
-    [addMessage, handleNavigate, pendingMessage, onClusterPrediction, onGlowOn],
+    [
+      addMessage,
+      handleNavigate,
+      pendingMessage,
+      onClusterPrediction,
+      onGlowOn,
+      onBeforeNavigate,
+    ],
   );
 
   const handleSubmit = useCallback(

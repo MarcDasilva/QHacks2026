@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useAudioRecorder } from "@/hooks/use-audio-recorder";
-import { useBackendChat } from "@/hooks/use-backend-chat";
+import { GLOW_BEFORE_NAV_MS, useBackendChat } from "@/hooks/use-backend-chat";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -214,6 +214,13 @@ function CrmReadyOverlay() {
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
 
   const {
+    setShowClusterDashboardAfterAnalysis,
+    setWow,
+    setSelectedCluster,
+    setShowGlow,
+  } = useDashboard();
+
+  const {
     messages,
     input,
     setInput,
@@ -231,14 +238,11 @@ function CrmReadyOverlay() {
     onGlowOn: () => {
       glowOnAfterTTSRef.current = true;
     },
+    onBeforeNavigate: (url) => {
+      setShowGlow(true);
+      setTimeout(() => router.push(url), GLOW_BEFORE_NAV_MS);
+    },
   });
-
-  const {
-    setShowClusterDashboardAfterAnalysis,
-    setWow,
-    setSelectedCluster,
-    setShowGlow,
-  } = useDashboard();
   const voiceContext = useVoice();
   const pendingAnalysisShiftRef = useRef(false);
   const prevLoadingRef = useRef(isLoading);
