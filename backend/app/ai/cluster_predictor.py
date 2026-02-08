@@ -164,6 +164,38 @@ def find_closest_clusters_sorted(query_embedding, cluster_centroids, exclude_ids
     return similarities
 
 
+def get_cluster_labels(conn, parent_cluster_id, child_cluster_id):
+    """
+    Fetch human-readable labels for parent and child cluster from the database.
+    
+    Returns:
+        tuple: (parent_label, child_label). Either may be None if not in DB or no label.
+    """
+    cursor = conn.cursor()
+    parent_label = None
+    child_label = None
+    try:
+        cursor.execute("""
+            SELECT label FROM clusters
+            WHERE level = 1 AND cluster_id = %s
+            LIMIT 1
+        """, (parent_cluster_id,))
+        row = cursor.fetchone()
+        if row and row[0]:
+            parent_label = row[0].strip()
+        cursor.execute("""
+            SELECT label FROM clusters
+            WHERE level = 2 AND parent_cluster_id = %s AND cluster_id = %s
+            LIMIT 1
+        """, (parent_cluster_id, child_cluster_id))
+        row = cursor.fetchone()
+        if row and row[0]:
+            child_label = row[0].strip()
+    finally:
+        cursor.close()
+    return (parent_label, child_label)
+
+
 def cluster_has_examples(conn, parent_cluster_id, child_cluster_id):
     """
     Check if a cluster has any examples.
@@ -176,15 +208,30 @@ def cluster_has_examples(conn, parent_cluster_id, child_cluster_id):
     Returns:
         bool: True if cluster has examples, False otherwise
     """
+    return get_cluster_record_count(conn, parent_cluster_id, child_cluster_id) > 0
+
+
+def get_cluster_record_count(conn, parent_cluster_id, child_cluster_id):
+    """
+    Return the number of records in a cluster.
+    
+    Args:
+        conn: Database connection
+        parent_cluster_id: Top-level cluster ID
+        child_cluster_id: Sub-cluster ID
+    
+    Returns:
+        int: Number of records in the cluster
+    """
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT COUNT(*) 
+        SELECT COUNT(*)
         FROM requests
         WHERE top_cluster_id = %s AND sub_cluster_id = %s
     """, (parent_cluster_id, child_cluster_id))
     count = cursor.fetchone()[0]
     cursor.close()
-    return count > 0
+    return count
 
 
 def predict_cluster(text_input, conn=None, model=None):
@@ -364,12 +411,17 @@ def predict_cluster(text_input, conn=None, model=None):
                 if not found_non_empty:
                     raise ValueError("No non-empty clusters found in database.")
         
+        parent_label, child_label = get_cluster_labels(conn, parent_cluster_id, child_cluster_id or 0)
+        record_count = get_cluster_record_count(conn, parent_cluster_id, child_cluster_id or 0)
         result = {
             'parent_cluster_id': parent_cluster_id,
             'child_cluster_id': child_cluster_id if child_cluster_id is not None else 0,
             'parent_similarity': float(parent_similarity),
             'child_similarity': float(child_similarity),
-            'text_embedding': query_embedding
+            'text_embedding': query_embedding,
+            'parent_label': parent_label,
+            'child_label': child_label,
+            'record_count': record_count,
         }
         
         return result
