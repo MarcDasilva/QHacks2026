@@ -14,6 +14,7 @@ pip install -r requirements.txt
 ### 2. Configure Supabase Connection
 
 1. Copy `.env.example` to `.env`:
+
    ```powershell
    cp .env.example .env
    ```
@@ -66,10 +67,25 @@ python <script_name>.py
 ```
 
 The scripts will:
+
 1. Connect to Supabase using credentials from `.env`
 2. Fetch CRM data from the table
 3. Process and analyze the data
 4. Save results to `trends/data/`
+
+## Cluster visualization (embeddings)
+
+Request embeddings (384D) are clustered in the DB; to visualize them in the dashboard:
+
+1. **Apply migration** `app/db/migrations/003_request_2d.sql` (creates `request_2d` table).
+2. **Run UMAP script** (one-off or after re-clustering):
+   ```bash
+   python scripts/compute_2d_umap.py
+   ```
+   Only **level-1 clusters (all 25)** are included; other clusters are removed from `request_2d`. Uses **1-in-6 sampling** within those clusters. Optional: `--sample-every 1` for no sampling, `--n-neighbors 30` to tune UMAP. For **3D visualization**, run `python scripts/compute_2d_umap.py --3d` (add `z_2d` column first: run `app/db/migrations/004_add_z_2d.sql` in Supabase).
+3. **Dashboard**: Open the dashboard home to see **2D** and **3D** cluster scatter views (3D appears after you run with `--3d`).
+
+**Feder** is a JS tool for visualizing Faiss/HNSW index files. This project uses Supabase + pgvector + MiniBatchKMeans, not Faiss/HNSW. Feder is only relevant if you export a Faiss/HNSW index to inspect; the main visualization is the custom Cluster view above (precomputed 2D from UMAP).
 
 ## Notes
 
@@ -82,6 +98,7 @@ The scripts will:
 ### Import errors in calculation scripts
 
 Make sure you're running scripts from the `trends/calcs` directory:
+
 ```powershell
 cd trends/calcs
 python script_name.py
