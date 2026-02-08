@@ -1,5 +1,3 @@
-# Ignore entire frontend folder
-/frontend/
 
 # Python
 __pycache__/

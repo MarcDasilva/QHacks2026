@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { API_URL } from "@/lib/api-config";
 
 const BACKEND_URL = API_URL;
+
+/** Delay (ms) after records dialogue completes before triggering analytics visit (README flow). */
+export const ANALYTICS_VISIT_DELAY_MS = 3000;
+
+/** Delay (ms) after analytics TTS is DONE before "I'm going to generate the report now" and report API. */
+export const REPORT_DELAY_AFTER_TTS_MS = 3000;
 
 export interface ChatMessage {
   id: string;
@@ -43,7 +49,14 @@ export interface UseBackendChatReturn {
   handleConfirmation: (confirmed: boolean) => Promise<void>;
   backendHealthy: boolean | null;
   checkHealth: () => Promise<void>;
+  /** True when we added the analytics discussion and are waiting for TTS to finish before starting report countdown. */
+  reportPendingTts: boolean;
+  /** Call when analytics discussion TTS is done; starts 3s delay then "I'm generating the report" and report API. */
+  startReportCountdownAfterTts: () => void;
 }
+
+/** Delay (ms) after turning glow on before navigating — glow must show first, then change page. */
+export const GLOW_BEFORE_NAV_MS = 1000;
 
 export interface UseBackendChatOptions {
   /** Called when the stream emits a cluster_prediction (parent + child cluster for user's follow-up). */
@@ -53,18 +66,48 @@ export interface UseBackendChatOptions {
   ) => void;
   /** Called when the stream emits glow_on (turn glow mode on after follow-up). */
   onGlowOn?: () => void;
+  /** Called when navigation is requested. Layout must turn glow on, wait GLOW_BEFORE_NAV_MS, then navigate to url. If provided, the hook never calls router.push — layout owns the order. */
+  onBeforeNavigate?: (url: string) => void;
+  /** Called when report generation starts (e.g. set Rive thinking true). */
+  onStartReportGeneration?: () => void;
+  /** Called when report PDF is ready with blob URL for viewing. Caller should set thinking false and open/show PDF. */
+  onReportComplete?: (pdfBlobUrl: string | null) => void;
 }
 
 export function useBackendChat(
   router: AppRouterInstance,
   options: UseBackendChatOptions = {},
 ): UseBackendChatReturn {
-  const { onClusterPrediction, onGlowOn } = options;
+  const {
+    onClusterPrediction,
+    onGlowOn,
+    onBeforeNavigate,
+    onStartReportGeneration,
+    onReportComplete,
+  } = options;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [backendHealthy, setBackendHealthy] = useState<boolean | null>(null);
+
+  /** Cluster from the current stream run; after "complete", we wait 3s then call analytics-visit. */
+  const lastClusterPredictionRef = useRef<{
+    parent_cluster_id: number;
+    child_cluster_id: number;
+  } | null>(null);
+  const analyticsVisitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const reportGenerateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const [reportPendingTts, setReportPendingTts] = useState(false);
+  const pendingReportAfterTtsRef = useRef<{
+    parentId: number;
+    childId: number;
+    discussion: string;
+  } | null>(null);
 
   const addMessage = useCallback(
     (message: Omit<ChatMessage, "id" | "timestamp">) => {
@@ -80,8 +123,28 @@ export function useBackendChat(
     [router],
   );
 
+  useEffect(() => {
+    return () => {
+      if (analyticsVisitTimeoutRef.current)
+        clearTimeout(analyticsVisitTimeoutRef.current);
+      if (reportGenerateTimeoutRef.current)
+        clearTimeout(reportGenerateTimeoutRef.current);
+    };
+  }, []);
+
   const sendMessage = useCallback(
     async (userMessage: string, mode: "chat" | "deep_analysis") => {
+      lastClusterPredictionRef.current = null;
+      if (analyticsVisitTimeoutRef.current) {
+        clearTimeout(analyticsVisitTimeoutRef.current);
+        analyticsVisitTimeoutRef.current = null;
+      }
+      if (reportGenerateTimeoutRef.current) {
+        clearTimeout(reportGenerateTimeoutRef.current);
+        reportGenerateTimeoutRef.current = null;
+      }
+      pendingReportAfterTtsRef.current = null;
+      setReportPendingTts(false);
       setIsLoading(true);
 
       if (!pendingMessage) {
@@ -146,10 +209,13 @@ export function useBackendChat(
                 const child = data.data.child_cluster_id;
                 if (
                   typeof parent === "number" &&
-                  typeof child === "number" &&
-                  onClusterPrediction
+                  typeof child === "number"
                 ) {
-                  onClusterPrediction(parent, child);
+                  lastClusterPredictionRef.current = {
+                    parent_cluster_id: parent,
+                    child_cluster_id: child,
+                  };
+                  if (onClusterPrediction) onClusterPrediction(parent, child);
                 }
               } else if (data.type === "glow_on" && onGlowOn) {
                 onGlowOn();
@@ -160,7 +226,13 @@ export function useBackendChat(
                   data: data.data,
                 });
                 if (data.data?.url) {
-                  setTimeout(() => handleNavigate(data.data!.url!), 500);
+                  const url = data.data.url;
+                  if (onBeforeNavigate) {
+                    // Layout owns glow-then-navigate: hook only notifies with url; layout turns glow on and navigates after delay
+                    onBeforeNavigate(url);
+                  } else {
+                    setTimeout(() => handleNavigate(url), 500);
+                  }
                 }
               } else if (data.type === "plan") {
                 addMessage({
@@ -179,6 +251,45 @@ export function useBackendChat(
               } else if (data.type === "chat") {
                 addMessage({ type: "chat", content: data.content ?? "" });
               } else if (data.type === "complete") {
+                const pending = lastClusterPredictionRef.current;
+                lastClusterPredictionRef.current = null;
+                if (
+                  pending != null &&
+                  onBeforeNavigate
+                ) {
+                  const parentId = pending.parent_cluster_id;
+                  const childId = pending.child_cluster_id;
+                  analyticsVisitTimeoutRef.current = setTimeout(() => {
+                    analyticsVisitTimeoutRef.current = null;
+                    fetch(`${BACKEND_URL}/api/chat/analytics-visit`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        parent_cluster_id: parentId,
+                        child_cluster_id: childId,
+                      }),
+                    })
+                      .then((res) => (res.ok ? res.json() : null))
+                      .then((body: { url?: string; discussion?: string } | null) => {
+                        if (!body) return;
+                        if (body.url) onBeforeNavigate(body.url);
+                        const discussion = body.discussion ?? "";
+                        if (discussion)
+                          addMessage({
+                            type: "chat",
+                            content: discussion,
+                          });
+                        // Wait for analytics TTS to finish; layout will call startReportCountdownAfterTts() in TTS onEnd
+                        pendingReportAfterTtsRef.current = {
+                          parentId,
+                          childId,
+                          discussion,
+                        };
+                        setReportPendingTts(true);
+                      })
+                      .catch((err) => console.error("Analytics visit failed:", err));
+                  }, ANALYTICS_VISIT_DELAY_MS);
+                }
                 setIsLoading(false);
                 return;
               } else if (data.type === "error") {
@@ -209,7 +320,16 @@ export function useBackendChat(
         setIsLoading(false);
       }
     },
-    [addMessage, handleNavigate, pendingMessage, onClusterPrediction, onGlowOn],
+    [
+      addMessage,
+      handleNavigate,
+      pendingMessage,
+      onClusterPrediction,
+      onGlowOn,
+      onBeforeNavigate,
+      onStartReportGeneration,
+      onReportComplete,
+    ],
   );
 
   const handleSubmit = useCallback(
@@ -248,6 +368,48 @@ export function useBackendChat(
     }
   }, []);
 
+  const startReportCountdownAfterTts = useCallback(() => {
+    const pending = pendingReportAfterTtsRef.current;
+    pendingReportAfterTtsRef.current = null;
+    setReportPendingTts(false);
+    if (!pending || !onStartReportGeneration || !onReportComplete) return;
+    reportGenerateTimeoutRef.current = setTimeout(() => {
+      reportGenerateTimeoutRef.current = null;
+      addMessage({
+        type: "chat",
+        content: "I'm going to generate the report now.",
+      });
+      onStartReportGeneration();
+      fetch(`${BACKEND_URL}/api/report/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parent_cluster_id: pending.parentId,
+          child_cluster_id: pending.childId,
+          discussion: pending.discussion,
+        }),
+      })
+        .then((res) => (res.ok ? res.arrayBuffer() : null))
+        .then((buf: ArrayBuffer | null) => {
+          if (buf == null) {
+            onReportComplete(null);
+            return;
+          }
+          const blob = new Blob([buf], { type: "application/pdf" });
+          const url = URL.createObjectURL(blob);
+          onReportComplete(url);
+        })
+        .catch((err) => {
+          console.error("Report generate failed:", err);
+          onReportComplete(null);
+        });
+    }, REPORT_DELAY_AFTER_TTS_MS);
+  }, [
+    addMessage,
+    onStartReportGeneration,
+    onReportComplete,
+  ]);
+
   return {
     messages,
     input,
@@ -259,5 +421,7 @@ export function useBackendChat(
     handleConfirmation,
     backendHealthy,
     checkHealth,
+    reportPendingTts,
+    startReportCountdownAfterTts,
   };
 }

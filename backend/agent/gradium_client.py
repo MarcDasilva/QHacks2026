@@ -22,9 +22,10 @@ class GradiumVoiceClient:
             raise ValueError("GRADIUM_API_KEY not found in environment variables")
         
         self.client = gradium.client.GradiumClient(api_key=self.api_key)
-        
-        # Default voice settings
-        self.default_voice_id = "m86j6D7UZpGzHsNu"  # Jack - pleasant British voice
+
+        # Default voice: Jack (male, British). Same as Gradium sample:
+        #   result = await client.tts(setup={"model_name": "default", "voice_id": "m86j6D7UZpGzHsNu", "output_format": "wav"}, text="Hello, world!")
+        self.default_voice_id = "m86j6D7UZpGzHsNu"
         self.default_model = "default"
     
     async def text_to_speech(
@@ -47,13 +48,13 @@ class GradiumVoiceClient:
             Audio bytes or async generator of audio chunks
         """
         voice = voice_id or self.default_voice_id
-        
+
         setup = {
             "model_name": self.default_model,
             "voice_id": voice,
-            "output_format": output_format
+            "output_format": output_format,
         }
-        
+
         if stream:
             # Return streaming audio
             return self._stream_tts(text, setup)
@@ -61,7 +62,34 @@ class GradiumVoiceClient:
             # Return complete audio
             result = await self.client.tts(setup=setup, text=text)
             return result.raw_data
-    
+
+    async def text_to_speech_with_timestamps(
+        self,
+        text: str,
+        voice_id: Optional[str] = None,
+        output_format: str = "wav",
+    ) -> tuple[bytes, list[dict]]:
+        """
+        TTS and word-level timestamps for subtitle sync.
+        Returns (audio_bytes, timestamps) where timestamps is list of {"text": str, "start_s": float, "stop_s": float}.
+        """
+        voice = voice_id or self.default_voice_id
+        setup = {
+            "model_name": self.default_model,
+            "voice_id": voice,
+            "output_format": output_format,
+        }
+        result = await self.client.tts(setup=setup, text=text)
+        timestamps = []
+        if getattr(result, "text_with_timestamps", None):
+            for item in result.text_with_timestamps:
+                timestamps.append({
+                    "text": getattr(item, "text", str(item)) if not isinstance(item, dict) else item.get("text", ""),
+                    "start_s": getattr(item, "start_s", 0.0) if not isinstance(item, dict) else item.get("start_s", 0.0),
+                    "stop_s": getattr(item, "stop_s", 0.0) if not isinstance(item, dict) else item.get("stop_s", 0.0),
+                })
+        return result.raw_data, timestamps
+
     async def _stream_tts(self, text: str, setup: dict) -> AsyncGenerator[bytes, None]:
         """
         Stream TTS audio chunks.

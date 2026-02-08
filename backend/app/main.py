@@ -36,6 +36,20 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, Response
 from pydantic import BaseModel
+from datetime import datetime
+
+# Optional: report generator (reportlab + reporting package)
+# backend root is already on sys.path; reportlab must be installed (pip install reportlab)
+_report_generator_error: str | None = None
+try:
+    from reporting.report_generator import ReportGenerator
+except Exception as e:
+    import logging
+    _report_generator_error = str(e)
+    logging.getLogger("uvicorn.error").warning(
+        "Report generator unavailable (install reportlab?): %s", _report_generator_error
+    )
+    ReportGenerator = None  # type: ignore[misc, assignment]
 import json
 import asyncio
 from typing import AsyncGenerator
@@ -43,6 +57,21 @@ import base64
 
 from agent.agent import CRMAnalyticsAgent
 from agent.gemini_client import GeminiAgent
+
+# Optional: cluster predictor (needs DATABASE_URL + sentence-transformers)
+try:
+    from app.ai.cluster_predictor import (
+        get_cluster_labels,
+        predict_cluster as sync_predict_cluster,
+    )
+except Exception:
+    sync_predict_cluster = None  # type: ignore[misc, assignment]
+    get_cluster_labels = None  # type: ignore[misc, assignment]
+
+try:
+    from app.db.connection import get_conn
+except Exception:
+    get_conn = None  # type: ignore[misc, assignment]
 
 # Optional: Gradium voice (TTS/STT); app runs without it if package unavailable
 try:
@@ -84,6 +113,9 @@ if GradiumVoiceClient is not None:
 else:
     print("Gradium not installed; voice endpoints disabled. pip install gradium when available.")
 
+# True after the user has entered analysis mode at least once (used to gate the "deep research" message in chat)
+_has_entered_analysis_mode = False
+
 
 class ChatRequest(BaseModel):
     message: str
@@ -96,23 +128,91 @@ class ChatMessage(BaseModel):
     data: dict = None
 
 
-async def stream_simple_chat(user_question: str) -> AsyncGenerator[str, None]:
+async def stream_analysis_ack(user_question: str) -> AsyncGenerator[str, None]:
     """
-    Stream simple chatbot responses (no data analysis)
+    When user asks for analysis: return short ack from Gemini, then frontend shifts to cluster dashboard.
+    APIs are called as normal; response is just "Awesome, lets do it" then complete.
     """
     try:
         yield f"data: {json.dumps({'type': 'start', 'content': 'Thinking...'})}\n\n"
         await asyncio.sleep(0.1)
-        
-        # Get simple chat response
-        response = agent.gemini_agent.simple_chat(user_question)
-        
-        # Send response as a chat message (not analysis)
-        yield f"data: {json.dumps({'type': 'chat', 'content': response})}\n\n"
-        
+        yield f"data: {json.dumps({'type': 'chat', 'content': 'Awesome, lets do it'})}\n\n"
+        yield f"data: {json.dumps({'type': 'complete', 'content': 'Done'})}\n\n"
+    except Exception as e:
+        error_msg = f"Error: {str(e)}"
+        yield f"data: {json.dumps({'type': 'error', 'content': error_msg})}\n\n"
+        yield f"data: {json.dumps({'type': 'complete', 'content': 'Stream ended'})}\n\n"
+
+
+async def stream_simple_chat(user_question: str) -> AsyncGenerator[str, None]:
+    """
+    Stream simple chatbot responses (no data analysis).
+    When user follows up after "what are you interested in?", run cluster predictor
+    and emit parent/child cluster so the frontend can highlight that cluster.
+    Only says the "deep research" message if the user has already entered analysis mode at least once.
+    """
+    try:
+        yield f"data: {json.dumps({'type': 'start', 'content': 'Thinking...'})}\n\n"
+        await asyncio.sleep(0.1)
+
+        # Only say the "deep research" message if user has previously entered analysis mode
+        if _has_entered_analysis_mode:
+            response = (
+                "That's a great idea, I'm going to enter deep research and generate "
+                "a report based on my findings."
+            )
+            yield f"data: {json.dumps({'type': 'chat', 'content': response})}\n\n"
+            yield f"data: {json.dumps({'type': 'glow_on'})}\n\n"
+
+        # Only run BERT/sentence-transformers cluster predictor when user has entered analysis mode
+        if _has_entered_analysis_mode and sync_predict_cluster and user_question.strip():
+            try:
+                # Use Gemini to extract search keywords from the user message before embedding search
+                search_query = user_question.strip()
+                if agent and agent.gemini_agent:
+                    search_query = await asyncio.to_thread(
+                        agent.gemini_agent.extract_search_keywords,
+                        user_question.strip(),
+                        "matching against municipal service request cluster labels (e.g. Facility Booking, City Hall Room Booking)",
+                    )
+                result = await asyncio.to_thread(
+                    sync_predict_cluster,
+                    search_query,
+                )
+                yield f"data: {json.dumps({'type': 'cluster_prediction', 'data': {'parent_cluster_id': result['parent_cluster_id'], 'child_cluster_id': result['child_cluster_id'], 'parent_similarity': result['parent_similarity'], 'child_similarity': result['child_similarity']}})}\n\n"
+                # Short message: which cluster we opened, record count, then that we're investigating
+                parent_id = result.get("parent_cluster_id")
+                child_id = result.get("child_cluster_id")
+                record_count = result.get("record_count", 0)
+                parent_label = result.get("parent_label") or (f"cluster {parent_id}" if parent_id is not None else None)
+                child_label = result.get("child_label") or (f"sub-cluster {child_id}" if child_id is not None else None)
+                count_phrase = f" — {record_count} record{'s' if record_count != 1 else ''} found"
+                if parent_label and child_label:
+                    msg = f"I've opened \"{parent_label}\" (sub-cluster \"{child_label}\"){count_phrase}. I'm going to further investigate these records for context."
+                elif parent_label:
+                    msg = f"I've opened \"{parent_label}\"{count_phrase}. I'm going to further investigate these records for context."
+                else:
+                    msg = f"I've opened the cluster view{count_phrase}. I'm going to further investigate these records for context."
+                yield f"data: {json.dumps({'type': 'chat', 'content': msg})}\n\n"
+            except Exception as pred_err:
+                import logging
+                logging.getLogger("uvicorn.error").warning("Cluster prediction failed: %s", pred_err)
+        elif not _has_entered_analysis_mode and agent and user_question.strip():
+            # Regular LLM call (no BERT load) when analysis mode not yet entered
+            try:
+                response_text = await asyncio.to_thread(
+                    agent.gemini_agent.simple_chat,
+                    user_question.strip(),
+                )
+                if response_text:
+                    yield f"data: {json.dumps({'type': 'chat', 'content': response_text})}\n\n"
+            except Exception as chat_err:
+                import logging
+                logging.getLogger("uvicorn.error").warning("Simple chat failed: %s", chat_err)
+
         # Send completion signal
         yield f"data: {json.dumps({'type': 'complete', 'content': 'Done'})}\n\n"
-        
+
     except Exception as e:
         error_msg = f"Error: {str(e)}"
         yield f"data: {json.dumps({'type': 'error', 'content': error_msg})}\n\n"
@@ -168,13 +268,31 @@ async def stream_agent_response(user_question: str) -> AsyncGenerator[str, None]
         
         # Navigate to relevant pages
         navigated_pages = set()
+        navigated_view_names = []
+        key_to_display = {
+            "frequency_over_time": "Frequency",
+            "backlog_ranked_list": "Backlog",
+            "backlog_distribution": "Backlog",
+            "priority_quadrant": "Priority Quadrant",
+            "geographic_hot_spots": "Geographic Hot Spots",
+            "time_to_close": "Time to Close",
+        }
         for product_id in product_ids:
             for key, url in navigation_mapping.items():
                 if key in product_id:
                     if url not in navigated_pages:
                         yield f"data: {json.dumps({'type': 'navigation', 'content': f'Navigating to {key} view', 'data': {'url': url}})}\n\n"
                         navigated_pages.add(url)
+                        display_name = key_to_display.get(key, key.replace("_", " ").title())
+                        if display_name not in navigated_view_names:
+                            navigated_view_names.append(display_name)
                         await asyncio.sleep(0.5)
+
+        # After navigation: discuss where we went and that we're investigating
+        if navigated_view_names:
+            views_str = " and ".join(navigated_view_names)
+            yield f"data: {json.dumps({'type': 'chat', 'content': f'I\'ve opened the {views_str} view. I\'m going to further investigate my records.'})}\n\n"
+            await asyncio.sleep(0.2)
         
         # Load data
         fetched_data_summaries = agent.data_loader.load_multiple_summaries(product_ids)
@@ -240,9 +358,11 @@ async def chat_stream(request: ChatRequest):
         # Check if "analysis" keyword is in the message
         mode = "deep_analysis" if "analysis" in request.message.lower() else "chat"
     
-    # Select appropriate stream handler
+    # Select appropriate stream handler (analysis returns short ack; frontend then shows cluster dashboard)
     if mode == "deep_analysis":
-        stream_func = stream_agent_response(request.message)
+        global _has_entered_analysis_mode
+        _has_entered_analysis_mode = True
+        stream_func = stream_analysis_ack(request.message)
     else:
         stream_func = stream_simple_chat(request.message)
     
@@ -255,6 +375,236 @@ async def chat_stream(request: ChatRequest):
             "X-Accel-Buffering": "no"  # Disable nginx buffering
         }
     )
+
+
+class ClusterPredictRequest(BaseModel):
+    message: str
+
+
+class AnalyticsVisitRequest(BaseModel):
+    parent_cluster_id: int
+    child_cluster_id: int
+
+
+# Product IDs that have an analytics dashboard page (from README / navigation_mapping)
+ANALYTICS_PRODUCT_IDS = {
+    "frequency_over_time",
+    "backlog_ranked_list",
+    "backlog_distribution",
+    "priority_quadrant",
+    "geographic_hot_spots",
+    "time_to_close",
+}
+NAVIGATION_MAPPING = {
+    "frequency_over_time": "/dashboard/analytics/frequency",
+    "backlog_ranked_list": "/dashboard/analytics/backlog",
+    "backlog_distribution": "/dashboard/analytics/backlog",
+    "priority_quadrant": "/dashboard/analytics/priority-quadrant",
+    "geographic_hot_spots": "/dashboard/analytics/geographic",
+    "time_to_close": "/dashboard/analytics/population",
+}
+KEY_TO_DISPLAY = {
+    "frequency_over_time": "Frequency",
+    "backlog_ranked_list": "Backlog",
+    "backlog_distribution": "Backlog",
+    "priority_quadrant": "Priority Quadrant",
+    "geographic_hot_spots": "Geographic Hot Spots",
+    "time_to_close": "Current population",
+}
+
+
+@app.post("/api/chat/analytics-visit")
+async def analytics_visit(request: AnalyticsVisitRequest):
+    """
+    After the records dialogue on the records page: pick a top CSV/data product
+    related to an analytics page, and return the URL plus a short discussion
+    (relationship to the analytics page or general trends).
+    """
+    if not agent:
+        raise HTTPException(
+            status_code=500,
+            detail="Agent not initialized. Set GEMINI_API_KEY in backend/.env",
+        )
+    if get_conn is None or get_cluster_labels is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Cluster/DB not available for analytics visit.",
+        )
+    parent_id = request.parent_cluster_id
+    child_id = request.child_cluster_id
+    conn = get_conn()
+    try:
+        parent_label, child_label = get_cluster_labels(
+            conn, parent_id, child_id or 0
+        )
+    finally:
+        conn.close()
+    parent_label = parent_label or f"cluster {parent_id}"
+    child_label = child_label or f"sub-cluster {child_id}"
+
+    # Plan: pick one analytics-linked data product for this cluster (README flow)
+    frequency_preview = agent._get_frequency_preview()
+    plan = await asyncio.to_thread(
+        agent.gemini_agent.plan_one_analytics_product_for_cluster,
+        parent_label,
+        child_label,
+        agent.catalog_summary,
+        frequency_preview,
+    )
+    product_id = None
+    for item in plan:
+        pid = item.get("product")
+        if pid and pid in ANALYTICS_PRODUCT_IDS:
+            product_id = pid
+            break
+    if not product_id:
+        product_id = "frequency_over_time"
+    url = NAVIGATION_MAPPING.get(product_id, "/dashboard/analytics/frequency")
+    display_name = KEY_TO_DISPLAY.get(
+        product_id, product_id.replace("_", " ").title()
+    )
+
+    # Load that product's data summary for the discussion
+    summaries = agent.data_loader.load_multiple_summaries([product_id])
+    data_summary = (summaries or {}).get(product_id, "")
+    if not data_summary:
+        dfs = agent.data_loader.load_multiple_products([product_id])
+        data_summary = ""
+        if dfs and product_id in dfs and dfs[product_id] is not None:
+            data_summary = agent.data_loader.get_data_summary(
+                dfs[product_id], max_rows=30
+            )
+
+    discussion = await asyncio.to_thread(
+        agent.gemini_agent.discuss_analytics_visit,
+        parent_label,
+        child_label,
+        product_id,
+        display_name,
+        data_summary,
+    )
+    return {"url": url, "discussion": discussion}
+
+
+class ReportGenerateRequest(BaseModel):
+    parent_cluster_id: int
+    child_cluster_id: int
+    discussion: str
+
+
+@app.post("/api/report/generate")
+async def report_generate(request: ReportGenerateRequest):
+    """
+    Generate a PDF report from cluster context and discussion.
+    Expects JSON with answer, rationale, key_metrics (synthesized from discussion via Gemini).
+    Returns PDF bytes so the frontend can display it.
+    """
+    if not agent:
+        raise HTTPException(
+            status_code=500,
+            detail="Agent not initialized. Set GEMINI_API_KEY in backend/.env",
+        )
+    if ReportGenerator is None:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Report generator not available. Install reportlab: pip install reportlab. "
+                + (f"Error: {_report_generator_error}" if _report_generator_error else "")
+            ),
+        )
+    if get_conn is None or get_cluster_labels is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Cluster/DB not available for report context.",
+        )
+
+    parent_id = request.parent_cluster_id
+    child_id = request.child_cluster_id
+    discussion = (request.discussion or "").strip()
+
+    conn = get_conn()
+    try:
+        parent_label, child_label = get_cluster_labels(
+            conn, parent_id, child_id or 0
+        )
+    finally:
+        conn.close()
+    parent_label = parent_label or f"cluster {parent_id}"
+    child_label = child_label or f"sub-cluster {child_id}"
+
+    # Build report input: answer, rationale, key_metrics (required by ReportGenerator per README)
+    report_data = await asyncio.to_thread(
+        agent.gemini_agent.report_data_from_discussion,
+        parent_label,
+        child_label,
+        discussion,
+    )
+
+    # Add products so report can render "Supporting Data Analysis" with CSV-based charts (README)
+    frequency_preview = agent._get_frequency_preview()
+    plan = await asyncio.to_thread(
+        agent.gemini_agent.plan_one_analytics_product_for_cluster,
+        parent_label,
+        child_label,
+        agent.catalog_summary,
+        frequency_preview,
+    )
+    product_id = None
+    for item in plan:
+        pid = item.get("product")
+        if pid and pid in ANALYTICS_PRODUCT_IDS:
+            product_id = pid
+            break
+    if product_id:
+        report_data["products"] = [
+            {"product": product_id, "why": plan[0].get("why", "Relevant to cluster") if plan else "Relevant to cluster"}
+        ]
+
+    # Generate PDF (ReportGenerator.generate_pdf: answer, rationale, key_metrics, optional products)
+    subtitle = f"Cluster: {parent_label} / {child_label} — {datetime.now().strftime('%B %d, %Y at %I:%M %p')}"
+    generator = ReportGenerator(
+        title="CRM Analytics Report",
+        subtitle=subtitle,
+    )
+    pdf_bytes = await asyncio.to_thread(generator.generate_pdf, report_data)
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": "inline; filename=report.pdf",
+        },
+    )
+
+
+@app.post("/api/cluster/predict")
+async def cluster_predict(request: ClusterPredictRequest):
+    """
+    Predict parent (level-1) and child (level-2) cluster for a text message.
+    Used when user follows up after "what are you interested in?" to highlight the relevant cluster.
+    """
+    if not sync_predict_cluster:
+        raise HTTPException(
+            status_code=503,
+            detail="Cluster predictor not available. Need DATABASE_URL and sentence-transformers.",
+        )
+    if not request.message.strip():
+        raise HTTPException(status_code=400, detail="message is required")
+    try:
+        result = await asyncio.to_thread(
+            sync_predict_cluster,
+            request.message.strip(),
+        )
+        return {
+            "parent_cluster_id": result["parent_cluster_id"],
+            "child_cluster_id": result["child_cluster_id"],
+            "parent_similarity": result["parent_similarity"],
+            "child_similarity": result["child_similarity"],
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/chat")
@@ -315,6 +665,28 @@ async def text_to_speech(request: TTSRequest):
                 "Content-Disposition": f"attachment; filename=speech.{request.output_format}"
             }
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TTS error: {str(e)}")
+
+
+@app.post("/api/voice/tts/with-timestamps")
+async def text_to_speech_with_timestamps(request: TTSRequest):
+    """
+    TTS with word-level timestamps for subtitle sync.
+    Returns JSON: { "audio_base64": str, "timestamps": [{ "text", "start_s", "stop_s" }] }
+    """
+    if not gradium_client:
+        raise HTTPException(status_code=500, detail="Gradium client not initialized. Check GRADIUM_API_KEY in .env")
+    try:
+        audio_bytes, timestamps = await gradium_client.text_to_speech_with_timestamps(
+            text=request.text,
+            voice_id=request.voice_id,
+            output_format=request.output_format,
+        )
+        return {
+            "audio_base64": base64.b64encode(audio_bytes).decode("utf-8"),
+            "timestamps": timestamps,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"TTS error: {str(e)}")
 

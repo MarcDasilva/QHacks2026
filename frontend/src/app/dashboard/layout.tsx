@@ -18,12 +18,12 @@ import {
 } from "@/components/ui/select";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useAudioRecorder } from "@/hooks/use-audio-recorder";
-import { useBackendChat } from "@/hooks/use-backend-chat";
+import { GLOW_BEFORE_NAV_MS, useBackendChat } from "@/hooks/use-backend-chat";
 import { useTextToSpeech } from "@/hooks/use-text-to-speech";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { ArrowRight, Loader2, Mic, Volume, VolumeX } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TextType from "@/components/TextType.jsx";
@@ -140,6 +140,7 @@ function DashboardLayoutContent({
     ready,
     showClusterDashboardAfterAnalysis,
     wow,
+    thinking,
     showGlow,
   } = useDashboard();
   const { isSpeaking } = useVoice();
@@ -183,6 +184,7 @@ function DashboardLayoutContent({
                   glowActive={showGlow}
                   talking={isSpeaking}
                   wow={wow}
+                  thinking={thinking}
                 />
                 {isCrmSelected && ready && <CrmReadyOverlay />}
               </div>
@@ -205,13 +207,27 @@ const ML_MODELS = [
   { value: "deepseek-r1", label: "DeepSeek R1", icon: "/deepseek.png" },
 ] as const;
 
+const WOW_AFTER_VISIT_MS = 1000;
+
 function CrmReadyOverlay() {
   const router = useRouter();
+  const pathname = usePathname();
+  const isFirstPathnameRef = useRef(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollBottomRef = useRef<HTMLDivElement>(null);
   const lastSpokenMessageRef = useRef<string>("");
   const [model, setModel] = useState<string>(ML_MODELS[0].value);
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
+
+  const {
+    setShowClusterDashboardAfterAnalysis,
+    setWow,
+    setThinking,
+    setSelectedCluster,
+    setShowGlow,
+    reportPdfUrl,
+    setReportPdfUrl,
+  } = useDashboard();
 
   const {
     messages,
@@ -224,6 +240,8 @@ function CrmReadyOverlay() {
     addMessage,
     backendHealthy,
     checkHealth,
+    reportPendingTts,
+    startReportCountdownAfterTts,
   } = useBackendChat(router, {
     onClusterPrediction: (parentClusterId) => {
       setSelectedCluster({ level: 1, cluster_id: parentClusterId });
@@ -231,14 +249,20 @@ function CrmReadyOverlay() {
     onGlowOn: () => {
       glowOnAfterTTSRef.current = true;
     },
+    onBeforeNavigate: (url) => {
+      setShowGlow(true);
+      setThinking(true);
+      setTimeout(() => router.push(url), GLOW_BEFORE_NAV_MS);
+    },
+    onStartReportGeneration: () => {},
+    onReportComplete: (pdfBlobUrl) => {
+      if (pdfBlobUrl) {
+        if (reportPdfUrl) URL.revokeObjectURL(reportPdfUrl);
+        setReportPdfUrl(pdfBlobUrl);
+        router.push("/dashboard/reports");
+      }
+    },
   });
-
-  const {
-    setShowClusterDashboardAfterAnalysis,
-    setWow,
-    setSelectedCluster,
-    setShowGlow,
-  } = useDashboard();
   const voiceContext = useVoice();
   const pendingAnalysisShiftRef = useRef(false);
   const prevLoadingRef = useRef(isLoading);
@@ -348,6 +372,27 @@ function CrmReadyOverlay() {
     };
   }, []);
 
+  // When report is pending but TTS is disabled, start report countdown after a short delay (so discussion is visible)
+  useEffect(() => {
+    if (!reportPendingTts || isTTSEnabled) return;
+    const t = setTimeout(() => startReportCountdownAfterTts(), 1500);
+    return () => clearTimeout(t);
+  }, [reportPendingTts, isTTSEnabled, startReportCountdownAfterTts]);
+
+  // Each time a page is visited (pathname change), set wow true then false shortly after; also turn off thinking
+  useEffect(() => {
+    if (isFirstPathnameRef.current) {
+      isFirstPathnameRef.current = false;
+      return;
+    }
+    setWow(true);
+    const t = setTimeout(() => {
+      setWow(false);
+      setThinking(false);
+    }, WOW_AFTER_VISIT_MS);
+    return () => clearTimeout(t);
+  }, [pathname, setWow, setThinking]);
+
   useEffect(() => {
     scrollBottomRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -371,6 +416,10 @@ function CrmReadyOverlay() {
         if (glowOnAfterTTSRef.current) {
           glowOnAfterTTSRef.current = false;
           setShowGlow(true);
+          setThinking(true);
+        }
+        if (reportPendingTts) {
+          startReportCountdownAfterTts();
         }
         if (pendingAnalysisShiftRef.current) {
           pendingAnalysisShiftRef.current = false;
@@ -402,6 +451,8 @@ function CrmReadyOverlay() {
     setWow,
     setShowGlow,
     addMessage,
+    reportPendingTts,
+    startReportCountdownAfterTts,
   ]);
 
   const handleMicClick = async () => {
