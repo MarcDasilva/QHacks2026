@@ -206,3 +206,42 @@ Now analyze the data and provide your response:"""
         except Exception as e:
             print(f"Error in analysis stage: {e}")
             raise
+    
+    def simple_chat(self, user_question: str) -> str:
+        """
+        Simple chatbot mode - direct conversation with Gemini
+        No data retrieval, just conversational responses with context
+        
+        Args:
+            user_question: The user's question
+            
+        Returns:
+            String response from Gemini
+        """
+        
+        prompt = f"""You are an intelligent assistant to the Mayor, specializing in municipal service requests and CRM data.
+
+You have knowledge about:
+- Municipal service request categories (roads, traffic, sidewalks, recreation, parks, etc.)
+- Service request lifecycle and management
+- Common municipal operations and priorities
+- How cities handle citizen requests and complaints
+
+The user is asking you a question. Provide a helpful, conversational response based on general knowledge about municipal services and CRM systems. Be concise and friendly.
+
+If the user asks about specific data or analytics, you can mention that they should use the "analysis" keyword to trigger a deep data analysis with real-time data.
+
+USER QUESTION:
+{user_question}
+
+Your response:"""
+
+        try:
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+            return response.text.strip()
+        except Exception as e:
+            print(f"Error in simple chat: {e}")
+            raise

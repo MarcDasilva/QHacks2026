@@ -18,9 +18,13 @@ const EYE_PERIOD_MS = 1200;
 type BoohooRiveProps = {
   /** When true, eyes move up/down instead of following cursor (glow highlight mode). */
   glowActive?: boolean;
+  /** When true, activates talking animation */
+  isSpeaking?: boolean;
+  /** When true, activates thinking animation */
+  isThinking?: boolean;
 };
 
-export function BoohooRive({ glowActive = false }: BoohooRiveProps) {
+export function BoohooRive({ glowActive = false, isSpeaking = false, isThinking = false }: BoohooRiveProps) {
   const { rive, RiveComponent } = useRive({
     src: "/boohooplusglow.riv",
     stateMachines: STATE_MACHINE_NAME,
@@ -72,6 +76,20 @@ export function BoohooRive({ glowActive = false }: BoohooRiveProps) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [talkingInput, thinkingInput]);
+
+  // Control talking animation based on isSpeaking prop
+  useEffect(() => {
+    if (talkingInput) {
+      talkingInput.value = isSpeaking;
+    }
+  }, [isSpeaking, talkingInput]);
+
+  // Control thinking animation based on isThinking prop
+  useEffect(() => {
+    if (thinkingInput) {
+      thinkingInput.value = isThinking;
+    }
+  }, [isThinking, thinkingInput]);
 
   useEffect(() => {
     if (!characterXInput || !characterYInput) return;

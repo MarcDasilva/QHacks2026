@@ -2,9 +2,11 @@
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { BoohooRive } from "@/components/boohoo-rive";
+import { ChatInterface } from "@/components/chat-interface";
 import { GlowEffect } from "@/components/glow-effect";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { VoiceProvider, useVoice } from "@/contexts/voice-context";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
@@ -89,15 +91,41 @@ export default function DashboardLayout({
   const sidebarUser = mapSupabaseUser(user);
 
   return (
+    <VoiceProvider>
+      <DashboardContent
+        sidebarUser={sidebarUser}
+        showGlow={showGlow}
+        onLogout={handleLogout}
+      >
+        {children}
+      </DashboardContent>
+    </VoiceProvider>
+  );
+}
+
+function DashboardContent({
+  sidebarUser,
+  showGlow,
+  onLogout,
+  children,
+}: {
+  sidebarUser: { name: string; email: string; avatar: string };
+  showGlow: boolean;
+  onLogout: () => void;
+  children: React.ReactNode;
+}) {
+  const { isSpeaking, isListening, isProcessing } = useVoice();
+
+  return (
     <SidebarProvider
-      style={
-        {
+      style=
+        {{
           "--sidebar-width": "calc(var(--spacing) * 72)",
           "--header-height": "calc(var(--spacing) * 12)",
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" user={sidebarUser} onLogout={handleLogout} />
+      <AppSidebar variant="inset" user={sidebarUser} onLogout={onLogout} />
       <SidebarInset className="min-h-0">
         <SiteHeader />
         <div className="flex min-h-0 flex-1 flex-col">
@@ -110,7 +138,30 @@ export default function DashboardLayout({
                 <GlowEffect active={showGlow} />
               </div>
               <div className="flex h-full max-h-full w-80 shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-zinc-200 dark:bg-zinc-800 md:w-96">
-                <BoohooRive glowActive={showGlow} />
+                {/* Boohoo mascot container */}
+                <div className="relative flex h-full flex-col">
+                  {/* Rive animation fills the container */}
+                  <div className="absolute inset-0 z-0">
+                    <BoohooRive 
+                      glowActive={showGlow} 
+                      isSpeaking={isSpeaking}
+                      isThinking={isProcessing || isListening}
+                    />
+                  </div>
+                  
+                  {/* Chat interface overlaid on the body area */}
+                  <div className="relative z-10 flex h-full flex-col">
+                    {/* Top spacer for head area - adjust this to position chat on body */}
+                    <div className="h-[30%] shrink-0" />
+                    
+                    {/* Chat interface - positioned on body */}
+                    <div className="flex-1 min-h-0 px-4 pb-4">
+                      <div className="h-full rounded-lg bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm shadow-lg overflow-hidden">
+                        <ChatInterface />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
