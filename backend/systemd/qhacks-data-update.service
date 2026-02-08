@@ -1,0 +1,29 @@
+[Unit]
+Description=QHacks Data Update Service - Fetch ArcGIS data and update Supabase
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/QHacks2026/backend
+Environment="PATH=/root/QHacks2026/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/root/QHacks2026/backend"
+
+# Load environment variables from .env file
+EnvironmentFile=/root/QHacks2026/backend/.env
+
+# Run the scheduled update script
+ExecStart=/root/QHacks2026/.venv/bin/python /root/QHacks2026/backend/scripts/scheduled_data_update.py
+
+# Restart policy
+Restart=on-failure
+RestartSec=5m
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=qhacks-data-update
+
+[Install]
+WantedBy=multi-user.target

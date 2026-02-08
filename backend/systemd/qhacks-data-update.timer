@@ -1,0 +1,17 @@
+[Unit]
+Description=QHacks Data Update Timer - Runs every 24 hours
+Requires=qhacks-data-update.service
+
+[Timer]
+# Run daily at 2:00 AM
+OnCalendar=daily
+OnCalendar=*-*-* 02:00:00
+
+# Run 5 minutes after boot (in case server was down during scheduled time)
+OnBootSec=5min
+
+# If the system was off during the scheduled time, run it as soon as possible
+Persistent=true
+
+[Install]
+WantedBy=timers.target
