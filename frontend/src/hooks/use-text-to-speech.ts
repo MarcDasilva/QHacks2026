@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useRef } from "react";
+import { API_URL } from "@/lib/api-config";
 
 export interface SubtitleTimestamps {
   text: string;
@@ -50,7 +51,7 @@ export function useTextToSpeech(): UseTextToSpeechReturn {
       }
 
       // Call backend TTS endpoint
-      const response = await fetch("http://localhost:8000/api/voice/tts", {
+      const response = await fetch(`${API_URL}/api/voice/tts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,7 +119,7 @@ export function useTextToSpeech(): UseTextToSpeechReturn {
         }
 
         const response = await fetch(
-          "http://localhost:8000/api/voice/tts/with-timestamps",
+          `${API_URL}/api/voice/tts/with-timestamps`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

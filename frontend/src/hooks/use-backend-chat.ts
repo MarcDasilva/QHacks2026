@@ -2,8 +2,9 @@
 
 import { useState, useCallback } from "react";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { API_URL } from "@/lib/api-config";
 
-const BACKEND_URL = "http://localhost:8000";
+const BACKEND_URL = API_URL;
 
 export interface ChatMessage {
   id: string;

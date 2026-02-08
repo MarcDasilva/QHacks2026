@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useRef } from "react";
+import { API_URL } from "@/lib/api-config";
 
 interface UseAudioRecorderReturn {
   isRecording: boolean;
@@ -91,7 +92,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     async (wavBlob: Blob, isFinal: boolean) => {
       const base64Audio = await blobToBase64(wavBlob);
       const response = await fetch(
-        "http://localhost:8000/api/voice/stt/stream",
+        `${API_URL}/api/voice/stt/stream`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
