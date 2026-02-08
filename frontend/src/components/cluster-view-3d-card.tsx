@@ -168,9 +168,9 @@ export function ClusterView3DCard({
     const layout = {
       margin: { l: 0, r: 0, t: 24, b: 0 },
       scene: {
-        xaxis: { title: "UMAP 1" },
-        yaxis: { title: "UMAP 2" },
-        zaxis: { title: "UMAP 3" },
+        xaxis: { title: { text: "UMAP 1" } },
+        yaxis: { title: { text: "UMAP 2" } },
+        zaxis: { title: { text: "UMAP 3" } },
         aspectmode: "data" as const,
       },
       showlegend: false,

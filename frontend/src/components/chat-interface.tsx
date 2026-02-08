@@ -46,7 +46,7 @@ export function ChatInterface({ className = "" }: ChatInterfaceProps) {
   const router = useRouter();
   const lastSpokenMessageRef = useRef<string>("");
   const [isTTSEnabled, setIsTTSEnabled] = useState(true);
-  const [model, setModel] = useState(ML_MODELS[0].value);
+  const [model, setModel] = useState<string>(ML_MODELS[0].value);
 
   const {
     messages,
