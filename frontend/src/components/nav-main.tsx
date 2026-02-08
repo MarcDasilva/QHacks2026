@@ -1,10 +1,15 @@
-"use client"
+"use client";
 
-import { IconChevronDown, IconHome, IconMail, type Icon } from "@tabler/icons-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import {
+  IconChevronDown,
+  IconHome,
+  IconMail,
+  type Icon,
+} from "@tabler/icons-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -14,18 +19,18 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
-import * as Collapsible from "@radix-ui/react-collapsible"
+} from "@/components/ui/sidebar";
+import * as Collapsible from "@radix-ui/react-collapsible";
 
 export type NavMainItem = {
-  title: string
-  url: string
-  icon?: Icon
-  children?: { title: string; url: string }[]
-}
+  title: string;
+  url: string;
+  icon?: Icon;
+  children?: { title: string; url: string }[];
+};
 
 export function NavMain({ items }: { items: NavMainItem[] }) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <SidebarGroup>
@@ -54,9 +59,9 @@ export function NavMain({ items }: { items: NavMainItem[] }) {
         </SidebarMenu>
         <SidebarMenu>
           {items.map((item) => {
-            const isAnalyticsParent = item.children != null
+            const isAnalyticsParent = item.children != null;
             const isAnalyticsActive =
-              isAnalyticsParent && pathname?.startsWith("/dashboard/analytics")
+              isAnalyticsParent && pathname?.startsWith("/dashboard/analytics");
 
             if (isAnalyticsParent && item.children?.length) {
               return (
@@ -74,9 +79,7 @@ export function NavMain({ items }: { items: NavMainItem[] }) {
                       >
                         {item.icon && <item.icon />}
                         <span>{item.title}</span>
-                        <IconChevronDown
-                          className="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
-                        />
+                        <IconChevronDown className="ml-auto size-4 shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                       </SidebarMenuButton>
                     </Collapsible.Trigger>
                     <Collapsible.Content>
@@ -95,7 +98,7 @@ export function NavMain({ items }: { items: NavMainItem[] }) {
                     </Collapsible.Content>
                   </SidebarMenuItem>
                 </Collapsible.Root>
-              )
+              );
             }
 
             return (
@@ -111,10 +114,10 @@ export function NavMain({ items }: { items: NavMainItem[] }) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            )
+            );
           })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

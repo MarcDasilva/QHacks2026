@@ -4,6 +4,7 @@ import type { ComponentType } from "react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import BlurText from "@/components/BlurText";
 import LogoLoop from "@/components/LogoLoop";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -118,7 +119,7 @@ export default function Home() {
         aria-hidden
       />
       <video
-        src="/compass.mp4"
+        src="/compassnew.mp4"
         autoPlay
         muted
         playsInline
@@ -135,7 +136,7 @@ export default function Home() {
           right: SIDE_PADDING,
         }}
       >
-        <header className="flex flex-col items-center text-center">
+        <header className="mt-14 flex flex-col items-center text-center">
           <div className="relative inline-block">
             <div className="absolute bottom-full left-0 right-0 mb-1 flex w-full justify-center">
               <div className="mx-auto mt-6 w-3/4 min-w-0 overflow-hidden">
@@ -150,18 +151,26 @@ export default function Home() {
                 />
               </div>
             </div>
-            <h1
+            <div
               className="text-center text-4xl font-normal tracking-tight text-white sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]"
               style={{ fontFamily: "Array, sans-serif" }}
             >
-              compass
-            </h1>
+              <BlurText
+                text="compass"
+                animateBy="letters"
+                className="m-0 inline-block text-center text-4xl font-normal tracking-tight text-white sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]"
+                animationFrom={undefined}
+                animationTo={undefined}
+                onAnimationComplete={undefined}
+              />
+            </div>
           </div>
           <div
             className="mt-2 w-full text-center text-2xl font-normal text-white md:text-3xl lg:text-4xl"
             style={{ fontFamily: "Zodiak, sans-serif" }}
           >
             <p>See Insights Clearer</p>
+            <p>Make Better Decisions</p>
           </div>
           {loading ? (
             <div
