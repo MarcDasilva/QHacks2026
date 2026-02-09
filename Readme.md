@@ -1,6 +1,6 @@
-# QHacks2026 - CRM Analytics Platform
+# Compass - Contextual Ai Agent
 
-A full-stack application for analyzing CRM service request data, featuring automated Python analytics with Supabase backend, Next.js frontend for visualizations, and **AI-powered chat with voice interaction** using Gemini AI and Gradium voice services.
+A full-stack application for analyzing Kingston Databases with a friendly faec, featuring automated Python analytics with Supabase backend, Next.js frontend for visualizations, and **AI-powered chat with voice interaction** using Gemini AI and Gradium voice services.
 
 ## ✨ Features
 
